@@ -1,0 +1,187 @@
+#include <amxmodx>
+#include <amxmisc>
+#include <fakemeta>
+#include <cstrike>
+#include <csstats>
+
+// meta
+
+#define PLUGIN_NAME		"Server Info Commands"
+#define PLUGIN_VERSION	"0.63"
+#define PLUGIN_AUTHOR	"deejayy"
+
+#define BANNER			"-SIC- Server Info Commands loaded"
+
+// constants
+
+new c_teams[4][] = {"None", "T", "CT", "Spec"}
+new c_weapons[33][] = {"undef", "P228", "undef", "Scout", "He", "Xm1014", "C4", "Mac10", "Aug", "Smoke", "Elite", "5-7", "Ump45", "Sg550", "Galil", "Famas", "Usp", "Glock", "Awp", "Mp5", "M249", "M3", "M4A1", "Tmp", "G3SG1", "Flash", "Deagle", "Sg552", "Ak47", "Knife", "P90", "Vest", "VestH"}
+
+// globals
+
+new g_headshots[33]
+new g_frags[33]
+new g_deaths[33]
+
+// registered commands
+
+#define CMD_SIC_INFO "sic_info"
+
+public plugin_init() {
+	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+
+	register_srvcmd(CMD_SIC_INFO, "sic_info")
+
+	register_forward(FM_AlertMessage, "supress_attack", 0)
+
+	register_event("DeathMsg", "evt_DeathMsg", "a")
+
+	log_message(BANNER)
+}
+
+// access to globals
+
+public sic_get_user_headshots(id) {
+	return g_headshots[id]
+}
+
+public sic_get_user_frags(id) {
+	return g_frags[id]
+}
+
+public sic_get_user_deaths(id) {
+	return g_deaths[id]
+}
+
+// supresses the attack messages from server console
+
+public supress_attack(at_type, message[]) {
+	if (contain(message, " attacked ") != -1) {
+		return FMRES_SUPERCEDE
+	}
+
+	return FMRES_IGNORED
+}
+
+// on client connect
+
+public client_putinserver(id) {
+	g_headshots[id]	= 0
+	g_frags[id]		= 0
+	g_deaths[id]	= 0
+}
+
+// broadcasted kill message handler
+
+public evt_DeathMsg() {
+	new wpn[32]
+	new killer		= read_data(1)
+	new victim		= read_data(2)
+	new headshot	= read_data(3)
+	read_data(4, wpn, sizeof(wpn)-1)
+
+	if (headshot) {
+		g_headshots[killer] += 1;
+	}
+
+	if (killer && victim) {
+		if (killer == victim) {
+			g_frags[killer]--
+		} else {
+			g_frags[killer]++
+		}
+		g_deaths[victim]++
+	}
+}
+
+// =========================================================
+// =========================================================
+// =========================================================
+
+enum e_pi_struct_int {
+	SIC_PI_NAME			= 0,
+	SIC_PI_AUTH_ID		= 1,
+	SIC_PI_USER_ID		= 2,
+	SIC_PI_IP			= 3,
+	SIC_PI_FRAGS		= 4,
+	SIC_PI_DEATHS		= 5,
+	SIC_PI_HEALTH		= 6,
+	SIC_PI_ARMOR		= 7,
+	SIC_PI_MONEY		= 8,
+	SIC_PI_WEAPON		= 9,
+	SIC_PI_CLIP			= 10,
+	SIC_PI_AMMO			= 11,
+	SIC_PI_FLAGS		= 12,
+	SIC_PI_PING			= 13,
+	SIC_PI_LOSS			= 14,
+	SIC_PI_TIME			= 15,
+	SIC_PI_HEADSHOT		= 16,
+	SIC_PIE_CL_UID		= 32,
+}
+
+public player_info_int(id) {
+	new p_player_info[e_pi_struct_int]
+
+	
+}
+
+public sic_info() {
+	new players[32], num_players, i
+
+	new CsTeams:p_team_cs
+	new p_armor, p_deaths, p_flags, p_frags, p_health, p_ping, p_loss, p_time, p_userid, p_weapon, p_clip, p_ammo, p_money, p_headshot
+	new Float:p_kdratio, Float:p_kmratio
+	new p_authid[32], p_uid[7], p_ip[32], p_name[32], p_kdratio_s[8], p_kmratio_s[8]
+
+	server_print("#%5s %20s %-4s %-4s %-5s %-4s %-5s %-5s %20s %8s %-4s %-4s %-4s %-4s %-7s %-4s %-4s %6s %6s %22s %-4s",
+		"UsrId", "Player name", "Kill", "Dead", "K/D", "Head", "K/Min", "Team", "STEAM/AUTH ID", "cl_uid", "Ping", "Loss", "Hp", "Armr", "Weapon", "Clip", "Ammo", "Money", "Time", "IP address:port", "Flags")
+
+	get_players(players, num_players, "")
+	for (i=0; i<num_players; i++) {
+		get_user_name	(players[i], p_name, 20)
+		get_user_authid	(players[i], p_authid, sizeof(p_authid)-1)
+		get_user_ping	(players[i], p_ping, p_loss)
+		get_user_info	(players[i], "cl_uid", p_uid, sizeof(p_uid)-1)
+		get_user_ip		(players[i], p_ip, sizeof(p_ip)-1, 0)
+
+		p_team_cs	= cs_get_user_team	(players[i])
+		p_armor		= get_user_armor	(players[i])
+		p_flags		= get_user_flags	(players[i], 0)
+		p_health	= get_user_health	(players[i])
+		p_time		= get_user_time		(players[i], 1)
+		p_userid	= get_user_userid	(players[i])
+		p_weapon	= get_user_weapon	(players[i], p_clip, p_ammo)
+		p_money		= cs_get_user_money	(players[i])
+
+		p_deaths	= sic_get_user_deaths	(players[i])
+		p_frags		= sic_get_user_frags	(players[i])
+		p_headshot	= sic_get_user_headshots(players[i])
+
+		if (p_deaths > 0) {
+			p_kdratio = Float:p_frags/Float:p_deaths
+		} else {
+			p_kdratio = Float:p_frags
+		}
+
+		if (p_frags > 10 && p_kdratio > 2.0-(p_frags/1000.0)*3.0) {
+			format(p_kdratio_s, sizeof(p_kdratio_s)-1, "%2.2f", p_kdratio)
+		} else {
+			p_kdratio_s = ""
+		}
+
+		p_kmratio = p_frags/((p_time+1.0)/60.0)
+
+		if (p_frags > 10 && p_kmratio > 1.4+(num_players/6.66)) {
+			format(p_kmratio_s, sizeof(p_kmratio_s)-1, "%2.2f", p_kmratio)
+		} else {
+			p_kmratio_s = ""
+		}
+
+		server_print("#%5d %20s %4d %4d %5s %4d %5s %5s %20s %8s %4d %4d %4d %4d %7s %4d %4d %6d %6d %22s %4d",
+			p_userid, p_name, p_frags, p_deaths, p_kdratio_s, p_headshot, p_kmratio_s, c_teams[int:p_team_cs], p_authid, p_uid, p_ping, p_loss, p_health, p_armor, c_weapons[p_weapon], p_clip, p_ammo, p_money, p_time, equali(p_ip,"127.0.0.1") ? "" : p_ip, p_flags)
+	}
+
+	return PLUGIN_HANDLED
+}
+
+

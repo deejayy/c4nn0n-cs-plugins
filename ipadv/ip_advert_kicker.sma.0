@@ -1,0 +1,120 @@
+#define PLUGINNAME	"IP Advertisement kicker"
+#define VERSION		"0.58"
+#define AUTHOR		"deejayy"
+
+#include <amxmodx>
+#include <amxmisc>
+#include <regex>
+#include <fakemeta>
+
+#define PATTERN				"[0-9 ]+\.[0-9 ]+\.[0-9 ]+\.[0-9 ]+|facebook\.com|\.com|\.hu|\.net|\.org"
+#define REASON				"Ne reklamozz"
+#define CVAR_KICK_THRESHOLD		"ipa_kickthreshold"
+
+public plugin_modules() {
+	require_module("regex")
+}
+
+check_spam(str[]) {
+	new Regex:g_result
+	new g_returnvalue
+	new g_error[64]
+	new ret = false
+
+	g_result = regex_match(str, PATTERN, g_returnvalue, g_error, 63)
+	switch (g_result) {
+		case REGEX_MATCH_FAIL: {
+			log_amx("Match fail %s", g_error)
+		}
+		case REGEX_PATTERN_FAIL: {
+			log_amx("Pattern fail %s", g_error)
+		}
+		case REGEX_NO_MATCH: {
+		}
+		default: {
+			regex_free(g_result)
+			ret = true
+		}
+	}
+
+	return ret
+}
+
+public hook_say(id, level, cid) {
+	new g_allArgs[1024]
+	read_args(g_allArgs, 1023)
+
+	if (check_spam(g_allArgs)) {
+		new userid = get_user_userid(id)
+		log_amx("kick #%d ^"%s^"", userid, REASON)
+		return PLUGIN_HANDLED
+	}
+
+	return PLUGIN_CONTINUE
+}
+
+public client_connect(id) {
+	new oldname[32], tempname[32], amxpw[32]
+	format(tempname, sizeof(tempname)-1, "Spammer %d", random_num(1000,9999))
+	get_user_name(id, oldname, sizeof(oldname)-1);
+
+	if (check_spam(oldname)) {
+		log_amx("Name matched against SPAM. Mame: %s", oldname);
+		log_amx("Chaging to spammer: %s", tempname)
+		client_cmd(id, "name ^"%s^"", tempname)
+		client_cmd(id, "setinfo name ^"%s^"", tempname)
+		return PLUGIN_HANDLED
+	}
+
+	get_user_info(id, "_pw", amxpw, sizeof(amxpw)-1);
+	log_amx("_PW: %s - %s", oldname, amxpw);
+
+	return PLUGIN_CONTINUE
+}
+
+public client_infochanged(id) {
+	new newname[32], oldname[32], tempname[32]
+	format(tempname, sizeof(tempname)-1, "Spammer %d", random_num(1000,9999))
+
+	get_user_info( id, "name", newname, sizeof(newname)-1 );
+	get_user_name( id, oldname, sizeof(oldname)-1 );
+
+	if (equali(newname, oldname))
+		return PLUGIN_CONTINUE;
+
+	if (check_spam(newname)) {
+		log_amx("Namechange matched against SPAM. Oldname: %s, newname: %s", oldname, newname);
+		if (equal(oldname, "")) {
+			log_amx("Chaging to spammer: %s", tempname)
+			client_cmd(id, "name ^"%s^"", tempname)
+			client_cmd(id, "setinfo name ^"%s^"", tempname)
+		} else {
+			log_amx("2: Chaging to oldname: %s", oldname)
+			client_cmd(id, "name ^"%s^"", oldname)
+			client_cmd(id, "setinfo name ^"%s^"", oldname)
+		}
+		return PLUGIN_HANDLED
+	}
+
+	return PLUGIN_CONTINUE
+}
+
+public MessageNameChange() {
+	new szInfo[64]
+	get_msg_arg_string(2,szInfo,63)
+
+	if(equali(szInfo,"#Cstrike_Name_Change"))
+		return PLUGIN_HANDLED
+
+	return PLUGIN_CONTINUE
+}
+
+public plugin_init() {
+	register_plugin(PLUGINNAME, VERSION, AUTHOR)
+
+	register_clcmd("say", "hook_say")
+	register_cvar(CVAR_KICK_THRESHOLD, "2")
+	register_message(get_user_msgid("SayText"),"MessageNameChange")
+
+	register_dictionary("admincmd.txt")
+}

