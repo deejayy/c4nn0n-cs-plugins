@@ -8,7 +8,7 @@ new g_wallhits[33]
 
 new c_teams[4][]		= {"None", "T", "CT", "Spec"}
 new c_weapons[33][]		= {"undef0", "P228", "undef2", "Scout", "He", "Xm1014", "C4", "Mac10", "Aug", "Smoke", "Elite", "5-7", "Ump45", "Sg550", "Galil", "Famas", "Usp", "Glock", "Awp", "Mp5", "M249", "M3", "M4A1", "Tmp", "G3SG1", "Flash", "Deagle", "Sg552", "Ak47", "Knife", "P90", "Vest", "VestH"}
-// new c_hitplaces[11][]	= {"Generic", "Head", "Chest", "Stomach", "Leftarm", "Rightarm", "Leftleg", "Rightleg", "8", "9", "10"}
+new c_hitplaces[11][]	= {"Generic", "Head", "Chest", "Stomach", "Leftarm", "Rightarm", "Leftleg", "Rightleg", "8", "9", "10"}
 
 enum e_si_struct {
 	SIC_SI_MAX		= 0,

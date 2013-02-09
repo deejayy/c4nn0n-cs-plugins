@@ -70,6 +70,8 @@ public plugin_init() {
 	format(g_a_log, sizeof(g_a_log)-1, "%s%s", ATTACK_LOG_PATH, g_logstamp)
 	format(g_k_log, sizeof(g_k_log)-1, "%s%s", KILL_LOG_PATH, g_logstamp)
 
+	register_cvar("sic_debug", "0")
+
 	register_srvcmd(CMD_SIC_INFO, "sic_info")
 	register_srvcmd(CMD_SIC_SETFOV, "sic_fov")
 	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN, "sic_fakechat")
@@ -625,38 +627,37 @@ public client_disconnect(id) {
 // broadcasted kill message handler, ta = team_attack
 
 public client_damage(attacker, victim, damage, wpnindex, hitplace, ta) {
-//	new p_wall
+	new p_wall, p_debug = 0
 
 	if (!is_player_visible(attacker, victim, g_thdl)) {
 		sic_set_user_wallhits(attacker, sic_get_user_wallhits(attacker) + 1)
-//		p_wall = 1
+		p_wall = 1
 	}
 
-/*
-//	"Gratis<4388><STEAM_0:0:902220747><CT>" attacked "_'-*PRooJ3oy*-'_<4390><STEAM_0:0:1271775411><TERRORIST>" with "deagle" (damage "60") (damage_armor "0") (health "-20") (armor "0")
-//	"csorimacko<4386><STEAM_0:0:2009414438><TERRORIST>" killed "halal<4380><BOT><CT>" with "aug"
+	p_debug = get_cvar_num("sic_debug")
 
-	new p_attacker[e_pi_struct_str][32], p_victim[e_pi_struct_str][32], p_attacker_i[e_pi_struct_int], p_victim_i[e_pi_struct_int]
+	if (p_debug) {
+		new p_attacker[e_pi_struct_str][32], p_victim[e_pi_struct_str][32], p_attacker_i[e_pi_struct_int], p_victim_i[e_pi_struct_int]
 
-	p_attacker   = player_info_str(attacker, 1)
-	p_attacker_i = player_info_int(attacker, 1)
-	p_victim     = player_info_str(victim, 1)
-	p_victim_i   = player_info_int(victim, 1)
+		p_attacker   = player_info_str(attacker, 1)
+		p_attacker_i = player_info_int(attacker, 1)
+		p_victim     = player_info_str(victim, 1)
+		p_victim_i   = player_info_int(victim, 1)
 
-	if ((!equal(p_attacker[SIC_PI_AUTH_ID], "BOT")) || (!equal(p_victim[SIC_PI_AUTH_ID], "BOT"))) {
-		log_message("^"%s<%d><%s><%s>^" attacked ^"%s<%d><%s><%s>^" with ^"%s^" (damage ^"%d^") (damage_armor ^"%d^") (health ^"%d^") (armor ^"%d^") (wall ^"%d^") (hitplace ^"%s^")",
-			p_attacker[SIC_PI_NAME], p_attacker_i[SIC_PI_USER_ID], p_attacker[SIC_PI_AUTH_ID], c_teams[p_attacker_i[SIC_PI_TEAM]],
-			p_victim  [SIC_PI_NAME], p_victim_i  [SIC_PI_USER_ID], p_victim  [SIC_PI_AUTH_ID], c_teams[p_victim_i  [SIC_PI_TEAM]],
-			c_weapons[wpnindex], damage, 0, p_victim_i[SIC_PI_HEALTH], p_victim_i[SIC_PI_ARMOR], p_wall, c_hitplaces[hitplace]
-		)
-
-		if (p_victim_i[SIC_PI_HEALTH] <= 0) {
-			log_message("^"%s<%d><%s><%s>^" killed ^"%s<%d><%s><%s>^" with ^"%s^" (wall ^"%d^") (hitplace ^"%s^")",
+		if ((!equal(p_attacker[SIC_PI_AUTH_ID], "BOT")) || (!equal(p_victim[SIC_PI_AUTH_ID], "BOT"))) {
+			log_message("^"%s<%d><%s><%s>^" attacked ^"%s<%d><%s><%s>^" with ^"%s^" (damage ^"%d^") (damage_armor ^"%d^") (health ^"%d^") (armor ^"%d^") (wall ^"%d^") (hitplace ^"%s^")",
 				p_attacker[SIC_PI_NAME], p_attacker_i[SIC_PI_USER_ID], p_attacker[SIC_PI_AUTH_ID], c_teams[p_attacker_i[SIC_PI_TEAM]],
 				p_victim  [SIC_PI_NAME], p_victim_i  [SIC_PI_USER_ID], p_victim  [SIC_PI_AUTH_ID], c_teams[p_victim_i  [SIC_PI_TEAM]],
-				c_weapons[wpnindex], p_wall, c_hitplaces[hitplace]
+				c_weapons[wpnindex], damage, 0, p_victim_i[SIC_PI_HEALTH], p_victim_i[SIC_PI_ARMOR], p_wall, c_hitplaces[hitplace]
 			)
+
+			if (p_victim_i[SIC_PI_HEALTH] <= 0) {
+				log_message("^"%s<%d><%s><%s>^" killed ^"%s<%d><%s><%s>^" with ^"%s^" (wall ^"%d^") (hitplace ^"%s^")",
+					p_attacker[SIC_PI_NAME], p_attacker_i[SIC_PI_USER_ID], p_attacker[SIC_PI_AUTH_ID], c_teams[p_attacker_i[SIC_PI_TEAM]],
+					p_victim  [SIC_PI_NAME], p_victim_i  [SIC_PI_USER_ID], p_victim  [SIC_PI_AUTH_ID], c_teams[p_victim_i  [SIC_PI_TEAM]],
+					c_weapons[wpnindex], p_wall, c_hitplaces[hitplace]
+				)
+			}
 		}
 	}
-*/
 }

@@ -15,7 +15,7 @@
 
 #define SPAM_PATTERN	"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
 #define EXCEPT_PATTERN	"193\.224\.130\.151|193\.224\.130\.190"
-#define BAN_PATTERN		"BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M\@F1A AND DARKTEAM|BaDBoY.*www.united-cheaters.net"
+#define BAN_PATTERN		"BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters"
 #define TARGET_SERVER	"193.224.130.151:27050"
 #define SPAM_MESSAGES	12
 
