@@ -25,6 +25,7 @@
 // registered commands
 
 #define CMD_SIC_INFO			"sic_info"
+#define CMD_SIC_LOGSYNC			"sic_ls"
 #define CMD_SIC_PUNISH			"sic_punish"
 #define CMD_SIC_SETFOV			"sic_fov"
 #define CMD_SIC_FAKECHAT_ADMIN	"sw"
@@ -73,6 +74,7 @@ public plugin_init() {
 	register_cvar("sic_debug", "0")
 
 	register_srvcmd(CMD_SIC_INFO, "sic_info")
+	register_srvcmd(CMD_SIC_LOGSYNC, "sic_logsync")
 	register_srvcmd(CMD_SIC_SETFOV, "sic_fov")
 	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN, "sic_fakechat")
 	register_srvcmd(CMD_SIC_PUNISH, "sic_punish")
@@ -291,6 +293,7 @@ public sic_admin_punish_undo(id, p_id) {
 	format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
 	alog("punish-undo^t%s", log_line)
 
+	g_blockshoot[p_id] = 0
 	client_cmd(p_id, "name ^"elkurta a nevemet egy admin^"")
 }
 
@@ -362,6 +365,12 @@ public hnd_specmenu(id, key) {
 
 public sic_info() {
 	sic_info_print()
+
+	return PLUGIN_HANDLED
+}
+
+public sic_logsync() {
+	sic_info_logsync()
 
 	return PLUGIN_HANDLED
 }
@@ -587,7 +596,7 @@ public plugin_log() {
 		eventless_log(DPROTO_FLOOD, message)
 	}
 
-	if (contain(message, " attacked ") != -1 || contain(message, " killed ") != -1 || contain(message, " say ") != -1 || contain(message, " say_team ") != -1) {
+	if (contain(message, " attacked ") != -1 || contain(message, " killed ") != -1) {
 		format_time(p_logstamp, sizeof(p_logstamp)-1, "L %m/%d/%Y - %H:%M:%S: ")
 		format(p_logline, sizeof(p_logline)-1, "%s%s", p_logstamp, message)
 		if (contain(message, " attacked ") != -1) {
@@ -644,7 +653,7 @@ public client_damage(attacker, victim, damage, wpnindex, hitplace, ta) {
 		p_victim     = player_info_str(victim, 1)
 		p_victim_i   = player_info_int(victim, 1)
 
-		if ((!equal(p_attacker[SIC_PI_AUTH_ID], "BOT")) || (!equal(p_victim[SIC_PI_AUTH_ID], "BOT"))) {
+		if ((!equal(p_attacker[SIC_PI_AUTH_ID], "BOT")) || (!equal(p_victim[SIC_PI_AUTH_ID], "BOT")) || p_debug > 1) {
 			log_message("^"%s<%d><%s><%s>^" attacked ^"%s<%d><%s><%s>^" with ^"%s^" (damage ^"%d^") (damage_armor ^"%d^") (health ^"%d^") (armor ^"%d^") (wall ^"%d^") (hitplace ^"%s^")",
 				p_attacker[SIC_PI_NAME], p_attacker_i[SIC_PI_USER_ID], p_attacker[SIC_PI_AUTH_ID], c_teams[p_attacker_i[SIC_PI_TEAM]],
 				p_victim  [SIC_PI_NAME], p_victim_i  [SIC_PI_USER_ID], p_victim  [SIC_PI_AUTH_ID], c_teams[p_victim_i  [SIC_PI_TEAM]],

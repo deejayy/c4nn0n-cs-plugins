@@ -129,11 +129,21 @@ public sic_set_user_wallhits(id, val) {
 }
 
 public sic_pi_client_putinserver(id) {
+	new p_player_info_str[e_pi_struct_str][32], p_uid
+
 	sic_set_user_headshots	(id, 0)
 	sic_set_user_frags		(id, 0)
 	sic_set_user_deaths		(id, 0)
 	sic_set_user_wallkills	(id, 0)
 	sic_set_user_wallhits	(id, 0)
+
+	p_player_info_str = player_info_str(id, 1)
+	p_uid = get_user_userid(id)
+
+	log_message("^"%s<%d><%s><>^" entered the game (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^")",
+		p_player_info_str[SIC_PI_NAME], p_uid, p_player_info_str[SIC_PI_AUTH_ID], p_player_info_str[SIC_PIE_CL_UID],
+		equali(p_player_info_str[SIC_PI_IP],"127.0.0.1") ? "" : p_player_info_str[SIC_PI_IP], 0
+	)
 }
 
 public sic_get_kdratio(kills, deaths, p_kdratio_s[], len) {
@@ -290,11 +300,44 @@ public sic_info_print_single(id) {
 
 		log_message("S#%-5d %5s %20s %4d %4d %5s %4d %4s %5s %4d %4d %5s %20s %8s %4d %4d %4d %4d %7s %4d %4d %6d %6d %22s %8d",
 			p_player_info_int[SIC_PI_USER_ID],		p_score_s,	p_name,		p_player_info_int[SIC_PI_FRAGS],		p_player_info_int[SIC_PI_DEATHS],		p_kdratio_s,	p_player_info_int[SIC_PI_HEADSHOT],	p_hsratio_s, p_kmratio_s,
-			p_player_info_int[SIC_PI_WALLKILLS],	p_player_info_int[SIC_PI_WALLHITS],	c_teams[p_player_info_int[SIC_PI_TEAM]],p_player_info_str[SIC_PI_AUTH_ID],	p_player_info_str[SIC_PIE_CL_UID],		p_player_info_int[SIC_PI_PING],			p_player_info_int[SIC_PI_LOSS],		p_player_info_int[SIC_PI_HEALTH],
-			p_player_info_int[SIC_PI_ARMOR],		c_weapons[p_player_info_int[SIC_PI_WEAPON]],	p_player_info_int[SIC_PI_CLIP],	p_player_info_int[SIC_PI_AMMO],		p_player_info_int[SIC_PI_MONEY],	p_player_info_int[SIC_PI_TIME],
+			p_player_info_int[SIC_PI_WALLKILLS],	p_player_info_int[SIC_PI_WALLHITS],	c_teams[p_player_info_int[SIC_PI_TEAM]],p_player_info_str[SIC_PI_AUTH_ID],	p_player_info_str[SIC_PIE_CL_UID],
+			p_player_info_int[SIC_PI_PING],			p_player_info_int[SIC_PI_LOSS],		p_player_info_int[SIC_PI_HEALTH],
+			p_player_info_int[SIC_PI_ARMOR],		c_weapons[p_player_info_int[SIC_PI_WEAPON]],	p_player_info_int[SIC_PI_CLIP],	p_player_info_int[SIC_PI_AMMO],		p_player_info_int[SIC_PI_MONEY],
+			p_player_info_int[SIC_PI_TIME],
 			equali(p_player_info_str[SIC_PI_IP],"127.0.0.1") ? "" : p_player_info_str[SIC_PI_IP], p_player_info_int[SIC_PI_FLAGS])
 	}
 
 	server_print("")
 }
 
+public sic_info_logsync() {
+	new players[32], num_players, i, p_map[33], p_timeleft[9], p_hostname[65], p_ip[33], Float:p_timelimit
+
+	get_players(players, num_players, "")
+	for (i=0; i<num_players; i++) {
+		sic_info_logsync_player(players[i], num_players);
+	}
+
+// szerver nev, ip, map, playerek, ct, t, timeleft, magyarazo
+
+	get_mapname(p_map, charsmax(p_map))
+	get_cvar_string("amx_timeleft", p_timeleft, sizeof(p_timeleft)-1)
+	get_cvar_string("hostname", p_hostname, sizeof(p_hostname)-1)
+	p_timelimit = get_cvar_float("mp_timelimit")
+	log_message("Mapsync: (title ^"%s^") (ip ^"%s^") (map ^"%s^") (timeleft ^"%s^") (timelimit ^"%.2f^")", p_hostname, "", p_map, p_timeleft, p_timelimit)
+}
+
+public sic_info_logsync_player(id, num_players) {
+	new p_player_info_int[e_pi_struct_int]
+	new p_player_info_str[e_pi_struct_str][32]
+
+	p_player_info_int = player_info_int(id, num_players)
+	p_player_info_str = player_info_str(id, num_players)
+
+	log_message("^"%s<%d><%s><%s>^" logsync (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (hit ^"%d^") (hit_head ^"%d^") (hit_wall ^"%d^") (kill ^"%d^") (kill_head ^"%d^") (kill_wall ^"%d^") (shot ^"%d^") (death ^"%d^") (time ^"%d^")",
+		p_player_info_str[SIC_PI_NAME], p_player_info_int[SIC_PI_USER_ID], p_player_info_str[SIC_PI_AUTH_ID], c_teams[p_player_info_int[SIC_PI_TEAM]], p_player_info_str[SIC_PIE_CL_UID],
+		equali(p_player_info_str[SIC_PI_IP],"127.0.0.1") ? "" : p_player_info_str[SIC_PI_IP], 0,
+		0, 0, p_player_info_int[SIC_PI_WALLHITS], p_player_info_int[SIC_PI_FRAGS], p_player_info_int[SIC_PI_HEADSHOT], p_player_info_int[SIC_PI_WALLKILLS],
+		0, p_player_info_int[SIC_PI_DEATHS], p_player_info_int[SIC_PI_TIME]
+	)
+}
