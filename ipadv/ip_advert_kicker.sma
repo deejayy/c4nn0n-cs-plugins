@@ -84,6 +84,18 @@ public cmd_say(id) {
 	get_user_name(id, p_name, charsmax(p_name))
 	new uid = get_user_userid(id)
 
+	if (g_muted[id] && !equali(p_param,"/",1)) {
+		server_print("*MUTED* %s: %s", p_name, p_orig_param)
+		fakechat(id, p_orig_param) // fake chat only for the player
+		return PLUGIN_HANDLED
+	}
+
+	p_regex = regex_match(p_param, BAN_PATTERN, p_ret, p_error, sizeof(p_error))
+	if (p_regex >= REGEX_OK && !g_muted[id]) {
+		server_cmd("sic_punish #%d", uid)
+		return PLUGIN_HANDLED
+	}
+
 	p_regex = regex_match(p_param, SPAM_PATTERN, p_ret, p_error, sizeof(p_error))
 	if (p_regex >= REGEX_OK) {
 		regex_free(p_regex)
@@ -97,17 +109,6 @@ public cmd_say(id) {
 			server_print("%s is spamming: %s", p_name, p_orig_param)
 			return PLUGIN_HANDLED
 		}
-	}
-
-	p_regex = regex_match(p_param, BAN_PATTERN, p_ret, p_error, sizeof(p_error))
-	if (p_regex >= REGEX_OK && !g_muted[id]) {
-		server_cmd("sic_punish #%d", uid)
-	}
-
-	if (g_muted[id] && !equali(p_param,"/",1)) {
-		server_print("*MUTED* %s: %s", p_name, p_orig_param)
-		fakechat(id, p_orig_param) // fake chat only for the player
-		return PLUGIN_HANDLED
 	}
 
 	return PLUGIN_CONTINUE
@@ -160,8 +161,8 @@ public msg_blocknamechange(iMsgId, iDest, iReceiver) {
 
 	if (equal(szMessage, "#Cstrike_Name_Change")) {
 		get_msg_arg_string(4, pNewname, charsmax(pNewname))
-		if (containi(pNewname, "egy senkihazi csiter vagyok")) {
-			return PLUGIN_HANDLED
+		if (containi(pNewname, "CHEATER")) {
+			return PLUGIN_CONTINUE
 		}
 	}
 

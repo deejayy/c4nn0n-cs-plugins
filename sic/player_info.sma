@@ -313,11 +313,6 @@ public sic_info_print_single(id) {
 public sic_info_logsync() {
 	new players[32], num_players, i, p_map[33], p_timeleft[9], p_hostname[65], p_ip[33], Float:p_timelimit
 
-	get_players(players, num_players, "")
-	for (i=0; i<num_players; i++) {
-		sic_info_logsync_player(players[i], num_players);
-	}
-
 // szerver nev, ip, map, playerek, ct, t, timeleft, magyarazo
 
 	get_mapname(p_map, charsmax(p_map))
@@ -325,6 +320,11 @@ public sic_info_logsync() {
 	get_cvar_string("hostname", p_hostname, sizeof(p_hostname)-1)
 	p_timelimit = get_cvar_float("mp_timelimit")
 	log_message("Mapsync: (title ^"%s^") (ip ^"%s^") (map ^"%s^") (timeleft ^"%s^") (timelimit ^"%.2f^")", p_hostname, "", p_map, p_timeleft, p_timelimit)
+
+	get_players(players, num_players, "")
+	for (i=0; i<num_players; i++) {
+		sic_info_logsync_player(players[i], num_players);
+	}
 }
 
 public sic_info_logsync_player(id, num_players) {

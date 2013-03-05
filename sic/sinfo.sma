@@ -29,6 +29,7 @@
 #define CMD_SIC_PUNISH			"sic_punish"
 #define CMD_SIC_SETFOV			"sic_fov"
 #define CMD_SIC_FAKECHAT_ADMIN	"sw"
+#define CMD_SIC_BLOCKME			"sic_blockme"
 #define CMD_BANNED_UID_RELOAD	"rlduid"
 #define ADMIN_NAME				"admin"
 
@@ -58,6 +59,7 @@ new g_observed[33]
 new g_specmenu[33]
 new g_blockshoot[33]
 new g_knifespeed[33][2]
+new g_banned[33]
 
 new Array:uid_bans;
 
@@ -73,11 +75,11 @@ public plugin_init() {
 
 	register_cvar("sic_debug", "0")
 
-	register_srvcmd(CMD_SIC_INFO, "sic_info")
-	register_srvcmd(CMD_SIC_LOGSYNC, "sic_logsync")
-	register_srvcmd(CMD_SIC_SETFOV, "sic_fov")
-	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN, "sic_fakechat")
-	register_srvcmd(CMD_SIC_PUNISH, "sic_punish")
+	register_srvcmd(CMD_SIC_INFO,             "sic_info"     )
+	register_srvcmd(CMD_SIC_LOGSYNC,          "sic_logsync"  )
+	register_srvcmd(CMD_SIC_SETFOV,           "sic_fov"      )
+	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN,   "sic_fakechat" )
+	register_srvcmd(CMD_SIC_PUNISH,           "sic_punish"   )
 
 	register_srvcmd(CMD_BANNED_UID_RELOAD, "load_banned_cl_uid")
 	register_srvcmd("test", "test")
@@ -86,6 +88,7 @@ public plugin_init() {
 	register_clcmd("say /away", "cmd_away")
 	register_clcmd("say /back", "cmd_back")
 	register_clcmd("sic_specmenu", "mnu_specmenu", ADMIN_BAN, " - display spectator menu")
+//	register_clcmd(CMD_SIC_BLOCKME, "cmd_sic_blockshoot")
 
 	register_event("DeathMsg", "evt_DeathMsg", "a")
 	register_event("StatusValue", "evt_StatusValue", "bd", "1=2")
@@ -147,8 +150,9 @@ public sic_check_score() {
 		p_player_info_int = player_info_int(players[i], num_players)
 		p_score = sic_calc_score(p_player_info_int, num_players)
 
-		if (p_score > 13.5 && p_player_info_int[SIC_PI_FRAGS] > 10) {
-			server_print("-- most kickelnek (%2.2f): sic_punish #%d", p_score, p_player_info_int[SIC_PI_USER_ID])
+		if (p_score > 13.5 && p_player_info_int[SIC_PI_FRAGS] > 15) {
+//			server_print("-- most kickelnek (%2.2f): sic_punish #%d", p_score, p_player_info_int[SIC_PI_USER_ID])
+			sic_admin_punish(0, players[i])
 		}
 	}
 
@@ -255,19 +259,23 @@ public sic_admin_exec(id, p_id, cmd[]) {
 
 public sic_admin_punish(id, p_id) {
 	if (p_id > 0) {
-		new p_admin[e_pi_struct_str][32], p_player[e_pi_struct_str][32], log_line[255], fh
+		new p_admin[e_pi_struct_str][32], p_player_int[e_pi_struct_int], p_player[e_pi_struct_str][32], log_line[255], fh
 
 		if (id > 0) {
 			p_admin = player_info_str(id, 1)
 		} else {
 			p_admin[SIC_PI_NAME] = "Server"
-			p_admin[SIC_PI_AUTH_ID] = "Server"
+			p_admin[SIC_PI_AUTH_ID] = "STEAM_ID_LAN"
 			p_admin[SIC_PIE_CL_UID] = "000000"
 		}
 		p_player = player_info_str(p_id, 1)
+		p_player_int = player_info_int(p_id, 1)
 
 		format(log_line, sizeof(log_line)-1, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"", p_admin[SIC_PI_NAME], p_admin[SIC_PI_AUTH_ID], p_admin[SIC_PIE_CL_UID], p_player[SIC_PI_NAME], p_player[SIC_PI_AUTH_ID], p_player[SIC_PIE_CL_UID])
 		alog("punish^t%s", log_line)
+
+		log_message("Punish: ^"%s<%d><%s><%s>^" has been punished (cl_uid ^"%s^") (ip ^"%s^") (admin ^"%s^")",
+			p_player[SIC_PI_NAME], p_player_int[SIC_PI_USER_ID], p_player[SIC_PI_AUTH_ID], c_teams[p_player_int[SIC_PI_TEAM]], p_player[SIC_PIE_CL_UID], p_player[SIC_PI_IP], p_admin[SIC_PIE_CL_UID]);
 
 		fh = fopen(BANNED_CL_UID_FILE, "a")
 		fputs(fh, p_player[SIC_PIE_CL_UID])
@@ -277,10 +285,13 @@ public sic_admin_punish(id, p_id) {
 
 		g_blockshoot[p_id] = 1
 		client_cmd(p_id, "m_yaw 0.022")
-		client_cmd(p_id, "bind mouse2 kill")
+		// client_cmd(p_id, "bind mouse2 kill")
 		client_cmd(p_id, "unbind k")
 		client_cmd(p_id, "+voicerecord")
-		client_cmd(p_id, "name ^"egy senkihazi csiter vagyok^"")
+//		if (!containi(p_player[SIC_PI_NAME], "CHEATER")) {
+			client_cmd(p_id, "name ^"[CHEATER] %s^"", p_player[SIC_PI_NAME])
+//		}
+		server_cmd("mute #%d", p_player_int[SIC_PI_USER_ID])
 	}
 }
 
@@ -374,6 +385,12 @@ public sic_logsync() {
 
 	return PLUGIN_HANDLED
 }
+
+/*
+public cmd_sic_blockshoot(id) {
+	g_blockshoot[p_id] = 1-g_blockshoot[p_id]
+}
+*/
 
 public sic_blockshoot(id, p_id) {
 	new p_name[33], p_msg[128]
@@ -470,12 +487,20 @@ public evt_StatusValue(id) {
 }
 
 public fw_blockshoot(id, uc_handle, seed) {
-	if (g_blockshoot[id] && is_user_alive(id)) {
+	if (is_user_alive(id)) {
 		static btn
 		btn = get_uc(uc_handle, UC_Buttons)
-		if (btn & IN_ATTACK) {
-			btn &= ~IN_ATTACK
-			set_uc(uc_handle, UC_Buttons, btn)
+		if (g_blockshoot[id]) {
+			if (btn & IN_ATTACK) {
+				btn &= ~IN_ATTACK
+				set_uc(uc_handle, UC_Buttons, btn)
+			}
+			if (btn & IN_ATTACK2) {
+				btn &= ~IN_ATTACK2
+				set_uc(uc_handle, UC_Buttons, btn)
+			}
+		}
+		if (btn & IN_FORWARD) {
 		}
 	}
 
@@ -555,7 +580,7 @@ public client_connect(id) {
 	get_mapname(p_map, sizeof(p_map)-1)
 
 	if (!equal(p_player_info_str[SIC_PI_AUTH_ID], "BOT")) {
-		if (equal(p_player_info_str[SIC_PIE_CL_UID], "")) {
+		if (equal(p_player_info_str[SIC_PIE_CL_UID], "") || equal(p_player_info_str[SIC_PIE_CL_UID], "76c6fd") || equal(p_player_info_str[SIC_PIE_CL_UID], "2ec9c1")) {
 			format(p_md5, sizeof(p_md5)-1, "%d.%s", random_num(10000,99999), p_player_info_str[SIC_PI_IP])
 			md5(p_md5, p_randomid)
 			copy(p_player_info_str[SIC_PIE_CL_UID], 6, p_randomid)
@@ -565,11 +590,13 @@ public client_connect(id) {
 		format(p_line, sizeof(p_line)-1, "%s^t%s^t%s^t%s^t%s", p_map, p_player_info_str[SIC_PI_NAME], p_player_info_str[SIC_PI_AUTH_ID], p_player_info_str[SIC_PI_IP], p_player_info_str[SIC_PIE_CL_UID])
 		eventless_log(PLAYER_LOG_PATH, p_line)
 
+		g_banned[id] = 0
 		for (i = 0; i < ArraySize(uid_bans); i++) {
 			ArrayGetString(uid_bans, i, temp_uid, charsmax(temp_uid))
 			if (strlen(temp_uid) > 0 && strlen(p_player_info_str[SIC_PIE_CL_UID]) > 0 && equali(p_player_info_str[SIC_PIE_CL_UID], temp_uid)) {
-				server_cmd("kick #%d ^"%s^"", get_user_userid(id), UID_BAN_REASON)
-				server_print("-SIC- cl_uid match, Kick %s", p_line)
+//				server_cmd("kick #%d ^"%s^"", get_user_userid(id), UID_BAN_REASON)
+				g_banned[id] = 1
+				server_print("-SIC- cl_uid match, Block %s", p_line)
 			}
 		}
 
@@ -618,7 +645,10 @@ public client_putinserver(id) {
 
 	g_observed[id]	= 0
 	g_specmenu[id]	= 0
-	g_blockshoot[id] = 0
+	g_blockshoot[id] = g_banned[id]
+	if (g_banned[id]) {
+		server_cmd("mute #%d", get_user_userid(id))
+	}
 	g_knifespeed[id][0] = 0
 	g_knifespeed[id][1] = 0
 }
@@ -631,6 +661,7 @@ public client_disconnect(id) {
 	g_blockshoot[id] = 0
 	g_knifespeed[id][0] = 0
 	g_knifespeed[id][1] = 0
+	g_banned[id] = 0
 }
 
 // broadcasted kill message handler, ta = team_attack
