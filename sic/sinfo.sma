@@ -29,6 +29,7 @@
 #define CMD_SIC_PUNISH			"sic_punish"
 #define CMD_SIC_SETFOV			"sic_fov"
 #define CMD_SIC_FAKECHAT_ADMIN	"sw"
+#define CMD_SIC_FAKECHAT_VSAY	"vs"
 #define CMD_SIC_BLOCKME			"sic_blockme"
 #define CMD_BANNED_UID_RELOAD	"rlduid"
 #define ADMIN_NAME				"admin"
@@ -79,6 +80,7 @@ public plugin_init() {
 	register_srvcmd(CMD_SIC_LOGSYNC,          "sic_logsync"  )
 	register_srvcmd(CMD_SIC_SETFOV,           "sic_fov"      )
 	register_srvcmd(CMD_SIC_FAKECHAT_ADMIN,   "sic_fakechat" )
+	register_srvcmd(CMD_SIC_FAKECHAT_VSAY,    "sic_vsay" )
 	register_srvcmd(CMD_SIC_PUNISH,           "sic_punish"   )
 
 	register_srvcmd(CMD_BANNED_UID_RELOAD, "load_banned_cl_uid")
@@ -414,6 +416,14 @@ public sic_fakechat(id) {
 	new p_text[255]
 	read_args(p_text, sizeof(p_text))
 	sic_fakechat_do(ADMIN_NAME, p_text)
+}
+
+public sic_vsay(id) {
+	new p_text[255], p_user[255]
+	read_argv(1, p_user, sizeof(p_user))
+	read_argv(2, p_text, sizeof(p_text))
+
+	sic_fakechat_do(p_user, p_text)
 }
 
 public sic_fov(id) {
