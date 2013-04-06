@@ -25,3 +25,14 @@ public fakechat_to(id, text[]) {
 	return PLUGIN_HANDLED
 }
 
+public fakechat_hl(id, text[]) {
+	new output[255]
+	format(output, sizeof(output)-1, "^x04%s", text)
+
+	message_begin(MSG_ONE, get_user_msgid("SayText"), {0,0,0}, id)
+	write_byte(id)
+	write_string(output)
+	message_end()
+
+	return PLUGIN_HANDLED
+}

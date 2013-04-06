@@ -83,9 +83,12 @@ public cmd_say(id) {
 
 	get_user_name(id, p_name, charsmax(p_name))
 	new uid = get_user_userid(id)
+	new auth[32]
+	get_user_authid(id, auth, charsmax(auth))
 
 	if (g_muted[id] && !equali(p_param,"/",1)) {
 		server_print("*MUTED* %s: %s", p_name, p_orig_param)
+ 		log_message("^"%s<%d><%s><>^" say ^"// %s^"", p_name, uid, auth, p_orig_param)
 		fakechat(id, p_orig_param) // fake chat only for the player
 		return PLUGIN_HANDLED
 	}

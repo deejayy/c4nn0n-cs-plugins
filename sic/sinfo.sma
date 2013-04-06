@@ -88,7 +88,11 @@ public plugin_init() {
 
 	register_clcmd("say /rs", "cmd_resetstats")
 	register_clcmd("say /away", "cmd_away")
+	register_clcmd("say /spec", "cmd_away")
 	register_clcmd("say /back", "cmd_back")
+	register_clcmd("say /admin", "cmd_adminlist")
+	register_clcmd("say /admins", "cmd_adminlist")
+	register_clcmd("say admins", "cmd_adminlist")
 	register_clcmd("sic_specmenu", "mnu_specmenu", ADMIN_BAN, " - display spectator menu")
 //	register_clcmd(CMD_SIC_BLOCKME, "cmd_sic_blockshoot")
 
@@ -386,6 +390,10 @@ public sic_logsync() {
 	sic_info_logsync()
 
 	return PLUGIN_HANDLED
+}
+
+public cmd_adminlist(id) {
+	fakechat_hl(id, "Online adminok: 1");
 }
 
 /*
