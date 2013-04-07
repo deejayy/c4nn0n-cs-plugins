@@ -1,0 +1,7 @@
+[en]
+ADMINS_ONLINE=Admins online: %d
+ADMINS_ONLINE_LIST=Admins online: %s
+
+[hu]
+ADMINS_ONLINE=Online adminok: %d
+ADMINS_ONLINE_LIST=Online adminok: %s

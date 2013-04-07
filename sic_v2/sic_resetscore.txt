@@ -1,0 +1,5 @@
+[en]
+YOUR_STATS_ARE_RESET=You have just reset your score
+
+[hu]
+YOUR_STATS_ARE_RESET=Nulláztad a statodat!

@@ -1,0 +1,5 @@
+[en]
+BACK_FROM_SPEC=You can go back to game by typing /back in chat
+
+[hu]
+BACK_FROM_SPEC=Visszaállni a /back paranccsal tudsz néző módból
