@@ -6,8 +6,8 @@
 
 #define sic_adminlist_included
 
-// cmd_sic_admin_list = 0: dont list, 1: list only number of admins, 2: list admin names
-#define cmd_sic_admin_list "sic_adminspotting"
+// cvar_sic_admin_list = 0: dont list, 1: list only number of admins, 2: list admin names
+#define cvar_sic_admin_list "sic_adminspotting"
 
 public sic_adminlist_plugin_init()
 {
@@ -17,14 +17,14 @@ public sic_adminlist_plugin_init()
 	register_clcmd("say admins",     "sic_adminlist_cmd_adminlist")
 	register_clcmd("say adminlist",  "sic_adminlist_cmd_adminlist")
 
-	register_cvar(cmd_sic_admin_list, "1")
+	register_cvar(cvar_sic_admin_list, "1")
 
 	register_dictionary("sic_adminlist.txt")
 }
 
 public sic_adminlist_cmd_adminlist(id)
 {
-	new p_listtype = get_cvar_num(cmd_sic_admin_list)
+	new p_listtype = get_cvar_num(cvar_sic_admin_list)
 
 	if (p_listtype > 0) {
 		if (p_listtype == 1) {
