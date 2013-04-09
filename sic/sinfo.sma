@@ -65,7 +65,7 @@ new g_banned[33]
 new Array:uid_bans;
 
 public plugin_precache() {
-    register_forward(FM_Spawn, "fw_spawn", 1)
+	register_forward(FM_Spawn, "fw_spawn", 1)
 }
 
 public plugin_init() {

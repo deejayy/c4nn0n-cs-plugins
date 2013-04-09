@@ -10,8 +10,10 @@
 #include <regex>
 
 #define spam_pattern "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
+#define ban_pattern  "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters"
 
 new g_muted[33]
+new g_chatbanned[33]
 
 public sic_moderate_plugin_init()
 {
@@ -19,6 +21,12 @@ public sic_moderate_plugin_init()
 	register_clcmd ("say_team", "sic_moderate_handle_say")
 	register_concmd("mute",     "sic_modereate_cmd_mute",   ADMIN_KICK, "- letiltja a chatet a felhasznalonak")
 	register_concmd("unmute",   "sic_modereate_cmd_unmute", ADMIN_KICK, "- visszaallitja a chatet a felhasznalonak")
+}
+
+public sic_moderate_client_connect(id)
+{
+	g_muted[id] = 0
+	g_chatbanned[id] = 0
 }
 
 public sic_modereate_cmd_mute(id, level, cid)
@@ -62,13 +70,15 @@ public sic_moderate_mute(player, id, mute)
 	#endif
 }
 
-public sic_moderate_is_spam(p_param[])
+public sic_moderate_match(p_param[], pattern[], strip)
 {
 	new p_ret, p_error[128], p_text[128]
 	copy(p_text, charsmax(p_text), p_param)
-	replace(p_text, charsmax(p_text), " ", "")
+	if (strip == 1) {
+		replace(p_text, charsmax(p_text), " ", "")
+	}
 
-	new Regex:p_regex = regex_match(p_text, spam_pattern, p_ret, p_error, sizeof(p_error))
+	new Regex:p_regex = regex_match(p_text, pattern, p_ret, p_error, sizeof(p_error))
 	if (p_regex >= REGEX_OK) {
 		regex_free(p_regex)
 		return 1
@@ -85,7 +95,19 @@ public sic_moderate_handle_say(id)
 
 	sic_userinfo_logstring(id, lstr_p, charsmax(lstr_p))
 
-	if ((g_muted[id] && !equali(p_param, "/", 1)) || sic_moderate_is_spam(p_param)) {
+	if (sic_moderate_match(p_param, ban_pattern, 0)) {
+		if (g_chatbanned[id] != 1) {
+			// TODO: ban plz.
+			g_chatbanned[id] = 1
+		}
+
+		format(p_chat, charsmax(p_chat), "CHEAT: %s", p_param)
+		log_message("%s say ^"%s^"", lstr_p, p_chat)
+
+		return PLUGIN_HANDLED
+	}
+
+	if ((g_muted[id] && !equali(p_param, "/", 1)) || sic_moderate_match(p_param, spam_pattern, 1)) {
 		format(p_chat, charsmax(p_chat), "MUTED: %s", p_param)
 		log_message("%s say ^"%s^"", lstr_p, p_chat)
 

@@ -1,3 +1,9 @@
+#if defined isvisible_included
+    #endinput
+#endif
+
+#define isvisible_included
+
 #include <amxmodx>
 #include <fakemeta>
 #include <xs>

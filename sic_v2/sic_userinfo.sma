@@ -14,6 +14,8 @@ enum _:playerinfo
 {
 	pi_name[33],
 	pi_auth[33],
+	pi_cl_uid[17],
+	pi_ip[17],
 	pi_team,
 	pi_userid,
 	pi_kills
@@ -22,8 +24,15 @@ enum _:playerinfo
 public sic_userinfo_fetchall(id, pi[])
 {
 	pi[pi_userid] = get_user_userid(id)
-	get_user_name(id, pi[pi_name], charsmax(pi[pi_name]))
-	get_user_authid(id, pi[pi_auth], charsmax(pi[pi_auth]))
+
+	get_user_name   (id, pi[pi_name], charsmax(pi[pi_name]))
+	get_user_authid (id, pi[pi_auth], charsmax(pi[pi_auth]))
+	get_user_ip     (id, pi[pi_ip], charsmax(pi[pi_ip]), 1)
+
+	if (id) {
+		get_user_info   (id, sic_uniq_key, pi[pi_cl_uid], charsmax(pi[pi_cl_uid]))
+	}
+
 	if (is_user_connected(id)) {
 		pi[pi_team] = _:cs_get_user_team(id)
 	} else {

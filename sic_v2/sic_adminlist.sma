@@ -27,6 +27,7 @@ public sic_adminlist_cmd_adminlist(id)
 	new p_listtype = get_cvar_num(cvar_sic_admin_list)
 
 	if (p_listtype > 0) {
+		// TODO: collect the real list
 		if (p_listtype == 1) {
 			#if defined sic_announce_included
 				sic_announce(id, "%L", LANG_PLAYER, "ADMINS_ONLINE", 1)
@@ -35,7 +36,6 @@ public sic_adminlist_cmd_adminlist(id)
 			#endif
 		}
 		if (p_listtype == 2) {
-			// TODO: collect the real list
 			#if defined sic_announce_included
 				sic_announce(id, "%L", LANG_PLAYER, "ADMINS_ONLINE_LIST", "a, b, c")
 			#elseif
