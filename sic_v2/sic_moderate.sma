@@ -8,9 +8,11 @@
 
 #include <amxmisc>
 #include <regex>
+#include <fakemeta>
 
-#define spam_pattern "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
-#define ban_pattern  "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters"
+#define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters"
+#define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33]
 new g_chatbanned[33]
@@ -21,12 +23,19 @@ public sic_moderate_plugin_init()
 	register_clcmd ("say_team", "sic_moderate_handle_say")
 	register_concmd("mute",     "sic_modereate_cmd_mute",   ADMIN_KICK, "- letiltja a chatet a felhasznalonak")
 	register_concmd("unmute",   "sic_modereate_cmd_unmute", ADMIN_KICK, "- visszaallitja a chatet a felhasznalonak")
+
+	register_forward(FM_ClientUserInfoChanged, "sic_moderate_fm_cinfoc")
 }
 
 public sic_moderate_client_connect(id)
 {
 	g_muted[id] = 0
 	g_chatbanned[id] = 0
+}
+
+public sic_moderate_client_putinserver(id)
+{
+	
 }
 
 public sic_modereate_cmd_mute(id, level, cid)
@@ -97,7 +106,7 @@ public sic_moderate_handle_say(id)
 
 	if (sic_moderate_match(p_param, ban_pattern, 0)) {
 		if (g_chatbanned[id] != 1) {
-			// TODO: ban plz.
+			sic_userlist_setaccess(id, PF_MUTED | PF_BLOCKED, 0, BAN_TYPE_PERMANENT)
 			g_chatbanned[id] = 1
 		}
 
@@ -119,4 +128,31 @@ public sic_moderate_handle_say(id)
 	}
 
 	return PLUGIN_CONTINUE
+}
+
+public sic_moderate_fm_cinfoc(id)
+{
+	new p_oldname[33], p_newname[33]
+	pev(id, pev_netname, p_oldname, charsmax(p_oldname))
+	get_user_info(id, "name", p_newname, charsmax(p_newname))
+
+	if (!equal(p_oldname, p_newname)) {
+		if (strlen(p_oldname) == 0) {
+			p_oldname = server_banner_name
+		}
+
+		if (sic_moderate_match(p_newname, spam_pattern, 1)) {
+			set_user_info(id, "name", p_oldname)
+			sic_moderate_mute(id, 0, 1)
+			return FMRES_HANDLED
+		}
+
+		if (containi(p_newname, "CHEATER") > 0) {
+			return FMRES_IGNORED
+		}
+
+		return FMRES_HANDLED
+	}
+
+	return FMRES_IGNORED
 }

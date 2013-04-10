@@ -16,6 +16,12 @@ enum (<<= 1)
 	PF_BANNED,
 }
 
+enum
+{
+	BAN_TYPE_TEMPORARY,
+	BAN_TYPE_PERMANENT
+}
+
 new Trie:g_uidlist
 new Trie:g_authlist
 new Trie:g_namelist
@@ -62,9 +68,11 @@ public sic_userlist_load()
 
 				if (i_limit == 0 || i_time + i_limit*60 > ts()) {
 					TrieSetCell(g_uidlist,  p_cl_uid, i_flags)
-					TrieSetCell(g_authlist, p_auth,   i_flags)
 					TrieSetCell(g_namelist, p_name,   i_flags)
 					TrieSetCell(g_iplist,   p_ip,     i_flags)
+					if (sic_bannable(p_auth)) {
+						TrieSetCell(g_authlist, p_auth,   i_flags)
+					}
 				}
 			} else {
 				server_print("Error, paramcount < 5: %d, %s", p_count, p_line)
@@ -84,7 +92,7 @@ public sic_userlist_client_connect(id)
 	if (TrieKeyExists(g_uidlist, pi[pi_cl_uid])) {
 		TrieGetCell(g_uidlist, pi[pi_cl_uid], i_flags)
 	}
-	if (TrieKeyExists(g_authlist, pi[pi_auth])) {
+	if (TrieKeyExists(g_authlist, pi[pi_auth]) && sic_bannable(pi[pi_auth])) {
 		TrieGetCell(g_authlist, pi[pi_auth], i_flags)
 	}
 	if (TrieKeyExists(g_iplist, pi[pi_ip])) {
@@ -101,17 +109,33 @@ public sic_userlist_client_connect(id)
 
 stock sic_userlist_setaccess(id, flags, timelimit, permanent=0)
 {
-	new pi[playerinfo], p_ts[33], p_flags[17]
-	sic_userinfo_fetchall(id, pi)
-	get_time("%Y-%m-%d %H:%M:%S", p_ts, charsmax(p_ts))
-	get_flags(flags, p_flags, charsmax(p_flags))
+	if (id && flags) {
+		new pi[playerinfo], p_ts[33], p_flags[17]
+		sic_userinfo_fetchall(id, pi)
+		get_time("%Y-%m-%d %H:%M:%S", p_ts, charsmax(p_ts))
+		get_flags(flags, p_flags, charsmax(p_flags))
 
-	sic_userlist_setflags(id, flags)
+		if (sic_bannable(pi[pi_auth])) {
+			TrieSetCell(g_authlist, pi[pi_auth],   flags)
+		} else {
+			copy(pi[pi_auth], charsmax(pi[pi_auth]), "")
+		}
+		TrieSetCell(g_uidlist,  pi[pi_cl_uid], flags)
+		TrieSetCell(g_namelist, pi[pi_name],   flags)
+		TrieSetCell(g_iplist,   pi[pi_ip],     flags)
+		sic_userlist_setflags(id, flags)
 
-	if (permanent) {
-		new p_line[255]
-		format(p_line, charsmax(p_line), "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit)
-		write_file(sic_userlist_filename, p_line)
+		if (permanent) {
+//			"^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit
+//			HINT: automatic ban by name or ip could be harmful, therefore i fixed the timelimit in 60 minutes, do it permanent by hand-edit <sic_userlist_filename>
+
+			if (!equal(pi[pi_cl_uid], "")) {
+				sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts,          "", pi[pi_auth], pi[pi_cl_uid],        "", p_flags, timelimit)
+			}
+			sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit > 60 || timelimit == 0 ? 60 : timelimit)
+		}
+	} else {
+		server_print("Invalid ID or flags!")
 	}
 }
 
