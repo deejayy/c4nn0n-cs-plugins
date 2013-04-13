@@ -22,9 +22,19 @@ public sic_puts(file[], text[], any:...)
 	write_file(file, p_text)
 }
 
+public sic_putsd(file[], text[], any:...)
+{
+	new p_text[1024], p_ts[33]
+	vformat(p_text, charsmax(p_text)-1, text, 3)
+	get_time("%Y-%m-%d %H:%M:%S", p_ts, charsmax(p_ts))
+
+	sic_puts(file, "%s^t%s", p_ts, p_text)
+}
+
 public sic_bannable(authid[])
 {
 	if (equal(authid, "BOT") ||
+		equal(authid, "") ||
 		equal(authid, "4294967295") ||
 		equal(authid, "HLTV") ||
 		equal(authid, "STEAM_ID_LAN") ||
@@ -38,3 +48,12 @@ public sic_bannable(authid[])
 
 	return 0
 }
+
+public sic_generate_cl_uid(cl_uid[], len, source[], any:...)
+{
+	new p_source[32], p_dest[34]
+	vformat(p_source, charsmax(p_source), source, 4)
+	md5(p_source, p_dest)
+	copy(cl_uid, len, p_dest)
+}
+

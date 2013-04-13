@@ -18,6 +18,7 @@ public sic_fakechat_plugin_init()
 {
 	register_srvcmd("pmsg", "sic_fakechat_privmsg")
 	register_srvcmd("gmsg", "sic_fakechat_globalmsg")
+	register_srvcmd("vs",   "sic_fakechat_globalmsg")
 }
 
 public sic_colormessage(id, color, text[], any:...)

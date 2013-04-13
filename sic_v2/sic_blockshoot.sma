@@ -13,7 +13,11 @@ public sic_blockshoot_plugin_init()
 	register_concmd("bsh",   "sic_blockshoot_set",   ADMIN_RCON, "- blokkolja egy jatekos loveseit")
 	register_concmd("unbsh", "sic_blockshoot_unset", ADMIN_RCON, "- engedelyezi egy jatekos loveseit")
 
-	register_forward(FM_CmdStart, "sic_blockshoot_forward")
+	// old method, denies shoot command
+	// register_forward(FM_CmdStart, "sic_blockshoot_forward", 1)
+
+	// new method, zero damage
+	RegisterHam(Ham_TakeDamage, "player", "sic_blockshoot_takedamage")
 }
 
 public sic_blockshoot_client_connect(id)
@@ -21,6 +25,7 @@ public sic_blockshoot_client_connect(id)
 	g_shootblocked[id] = 0
 }
 
+// old method
 public sic_blockshoot_forward(id, uc_handle, seed)
 {
 	if (is_user_alive(id)) {
@@ -39,6 +44,16 @@ public sic_blockshoot_forward(id, uc_handle, seed)
 	}
 
 	return FMRES_IGNORED
+}
+
+// new method
+public sic_blockshoot_takedamage(victim, inflictor, attacker, Float:dmg, dmgbits)
+{
+	if (is_user_alive(attacker)) {
+		if (g_shootblocked[attacker]) {
+			SetHamParamFloat(4, 0.0)
+		}
+	}
 }
 
 public sic_blockshoot_set(id, level, cid)

@@ -7,7 +7,8 @@
 #define sic_userlist_included
 
 // ; timestamp name auth cl_uid ip flags timelimit(mins) optionalcomments
-#define sic_userlist_filename "addons/amxmodx/configs/sic_userlist.cfg"
+#define sic_userlist_filename  "addons/amxmodx/configs/sic_userlist.cfg"
+#define sic_userlist_playerlog "addons/amxmodx/logs/players.log"
 
 enum (<<= 1)
 {
@@ -29,7 +30,7 @@ new Trie:g_iplist
 
 public sic_userlist_plugin_init()
 {
-	register_concmd("rlduid", "sic_userlist_reload",   ADMIN_RCON, "- ujratolti a banlistat")
+	register_concmd("rlduid", "sic_userlist_reload",    ADMIN_RCON, "- ujratolti a banlistat")
 
 	sic_userlist_load()
 }
@@ -67,12 +68,7 @@ public sic_userlist_load()
 				i_flags = read_flags(p_flags)
 
 				if (i_limit == 0 || i_time + i_limit*60 > ts()) {
-					TrieSetCell(g_uidlist,  p_cl_uid, i_flags)
-					TrieSetCell(g_namelist, p_name,   i_flags)
-					TrieSetCell(g_iplist,   p_ip,     i_flags)
-					if (sic_bannable(p_auth)) {
-						TrieSetCell(g_authlist, p_auth,   i_flags)
-					}
+					sic_userlist_addlist(i_flags, p_cl_uid, p_name, p_ip, p_auth)
 				}
 			} else {
 				server_print("Error, paramcount < 5: %d, %s", p_count, p_line)
@@ -86,8 +82,17 @@ public sic_userlist_load()
 
 public sic_userlist_client_connect(id)
 {
-	new pi[playerinfo], i_flags = 0
+	new pi[playerinfo], i_flags = 0, p_cl_uid[8]
 	sic_userinfo_fetchall(id, pi)
+
+	if (!is_user_bot(id)) {
+		if (equal(pi[pi_cl_uid], "")) {
+			sic_generate_cl_uid(p_cl_uid, 6, "%s.%d.%s", pi[pi_ip], random_num(10000,99999), id)
+			set_user_info(id, "cl_uid", p_cl_uid)
+		}
+
+		sic_putsd(sic_userlist_playerlog, "%20s^t%32s^t%20s^t%16s^t%6s", g_mapname, pi[pi_name], pi[pi_auth], pi[pi_ip], pi[pi_cl_uid])
+	}
 
 	if (TrieKeyExists(g_uidlist, pi[pi_cl_uid])) {
 		TrieGetCell(g_uidlist, pi[pi_cl_uid], i_flags)
@@ -105,6 +110,32 @@ public sic_userlist_client_connect(id)
 	if (i_flags) {
 		sic_userlist_setflags(id, i_flags)
 	}
+
+}
+
+public sic_userlist_addlist(i_flags, p_cl_uid[], p_name[], p_ip[], p_auth[])
+{
+	if (!equal(p_cl_uid, "")) {
+		TrieSetCell(g_uidlist,  p_cl_uid, i_flags)
+	}
+	if (!equal(p_name, "")) {
+		TrieSetCell(g_namelist, p_name,   i_flags)
+	}
+	if (!equal(p_ip, "")) {
+		TrieSetCell(g_iplist,   p_ip,     i_flags)
+	}
+	if (!equal(p_auth, "") && sic_bannable(p_auth)) {
+		TrieSetCell(g_authlist, p_auth,   i_flags)
+	}
+}
+
+public sic_userlist_client_putinserver(id)
+{
+	new lstr[128], pi[playerinfo]
+	sic_userinfo_fetchall(id, pi)
+	sic_userinfo_logstring_b(pi, lstr, charsmax(lstr))
+
+	log_message("%s entered the game (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^")", lstr, pi[pi_cl_uid], pi[pi_ip], 0)
 }
 
 stock sic_userlist_setaccess(id, flags, timelimit, permanent=0)
@@ -115,21 +146,19 @@ stock sic_userlist_setaccess(id, flags, timelimit, permanent=0)
 		get_time("%Y-%m-%d %H:%M:%S", p_ts, charsmax(p_ts))
 		get_flags(flags, p_flags, charsmax(p_flags))
 
-		if (sic_bannable(pi[pi_auth])) {
-			TrieSetCell(g_authlist, pi[pi_auth],   flags)
-		} else {
+		sic_userlist_addlist(flags, pi[pi_cl_uid], pi[pi_name], pi[pi_ip], pi[pi_auth])
+		sic_userlist_setflags(id, flags)
+
+		if (!sic_bannable(pi[pi_auth])) {
 			copy(pi[pi_auth], charsmax(pi[pi_auth]), "")
 		}
-		TrieSetCell(g_uidlist,  pi[pi_cl_uid], flags)
-		TrieSetCell(g_namelist, pi[pi_name],   flags)
-		TrieSetCell(g_iplist,   pi[pi_ip],     flags)
-		sic_userlist_setflags(id, flags)
+
 
 		if (permanent) {
 //			"^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit
 //			HINT: automatic ban by name or ip could be harmful, therefore i fixed the timelimit in 60 minutes, do it permanent by hand-edit <sic_userlist_filename>
 
-			if (!equal(pi[pi_cl_uid], "")) {
+			if (!equal(pi[pi_cl_uid], "") || sic_bannable(pi[pi_auth])) {
 				sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts,          "", pi[pi_auth], pi[pi_cl_uid],        "", p_flags, timelimit)
 			}
 			sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit > 60 || timelimit == 0 ? 60 : timelimit)
