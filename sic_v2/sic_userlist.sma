@@ -124,16 +124,16 @@ public sic_userlist_get_flags(type, param[])
 
 public sic_userlist_client_connect(id)
 {
-	new pi[playerinfo], i_flags = 0, p_cl_uid[8]
+	new pi[playerinfo], i_flags = 0
 	sic_userinfo_fetchall(id, pi)
 
 	if (!is_user_bot(id)) {
 		if (equal(pi[pi_cl_uid], "") || equal(pi[pi_cl_uid], "76c6fd") || equal(pi[pi_cl_uid], "2ec9c1")) {
-			sic_generate_cl_uid(p_cl_uid, 6, "%s.%d.%s", pi[pi_ip], random_num(10000,99999), id)
-			set_user_info(id, "cl_uid", p_cl_uid)
+			sic_generate_cl_uid(pi[pi_cl_uid], 6, "%s.%d.%s", pi[pi_ip], random_num(10000,99999), id)
+			set_user_info(id, "cl_uid", pi[pi_cl_uid])
 		}
 
-		sic_putsd(sic_userlist_playerlog, "%20s^t%32s^t%20s^t%16s^t%6s", g_mapname, pi[pi_name], pi[pi_auth], pi[pi_ip], pi[pi_cl_uid])
+		sic_putsd(sic_userlist_playerlog, "%20s^t%32s^t%20s^t%24s^t%6s", g_mapname, pi[pi_name], pi[pi_auth], pi[pi_ip], pi[pi_cl_uid])
 	}
 
 	if (TrieKeyExists(g_uidlist, pi[pi_cl_uid])) {

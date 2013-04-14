@@ -4,7 +4,8 @@
 
 #define sic_dos_included
 
-#define sic_dos_connect_limit 7
+#define sic_dos_connect_limit 12
+#define sic_dos_timeout       45
 
 new Trie:g_ipflood
 
@@ -24,7 +25,7 @@ public sic_dos_client_connect(id)
 	num++
 	if (num > sic_dos_connect_limit) {
 		log_message("Connect flood detected, DoS attempt from: %s", ip)
-		server_cmd("addip 240 %s", ip)
+		server_cmd("addip %d %s", sic_dos_timeout, ip)
 	}
 	if (!equal(ip, "127.0.0.1")) {
 		TrieSetCell(g_ipflood, ip, num)
