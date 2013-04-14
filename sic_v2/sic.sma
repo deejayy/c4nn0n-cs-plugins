@@ -1,7 +1,7 @@
 // Server Info Commands
 
 #define PLUGIN_NAME		"Server Info Commands"
-#define PLUGIN_VERSION	"1.32" // rewritten from scratch at 0.87a.1
+#define PLUGIN_VERSION	"1.42" // rewritten from scratch at 0.87a.1
 #define PLUGIN_AUTHOR	"deejayy"
 
 #define BANNER			"-SIC- Server Info Commands loaded"
@@ -26,6 +26,8 @@
 #include "sic_admin.sma"
 #include "sic_cheats.sma"
 #include "sic_menu.sma"
+#include "sic_weapons.sma"
+#include "sic_dos.sma"
 
 public plugin_init()
 {
@@ -45,6 +47,7 @@ public plugin_init()
 	sic_userinfo_plugin_init()
 	sic_cheats_plugin_init()
 	sic_menu_plugin_init()
+	sic_dos_plugin_init()
 
 	register_dictionary("common.txt")
 
@@ -54,9 +57,7 @@ public plugin_init()
 
 public client_connect(id)
 {
-//	commented out, see sic_pwsteal_client_putinserver()
-//	sic_pwsteal_client_connect(id)
-
+	sic_dos_client_connect(id)
 	sic_moderate_client_connect(id)
 	sic_blockshoot_client_connect(id)
 	sic_userlist_client_connect(id)
@@ -87,5 +88,5 @@ public plugin_log()
 
 public sic_test(id)
 {
-	
+	server_print("awps: %d", sic_weapons_count(CSW_AWP, "CT"))
 }

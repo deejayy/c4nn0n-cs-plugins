@@ -33,7 +33,6 @@ public evt_DeathMsg() {
 
 	if (stat[CS_TEAM_CT] - stat[CS_TEAM_T] >= 2) {
 		if (team == CS_TEAM_CT) {
-//			server_print("Switching victim (%d) to CS_TEAM_T", victim)
 			cs_set_user_team(victim, CS_TEAM_T)
 			fakechat_to(victim, "Mostantol TERRORISTA vagy!")
 			fakechat_to(victim, "Mostantol TERRORISTA vagy!")
@@ -42,7 +41,6 @@ public evt_DeathMsg() {
 
 	if (stat[CS_TEAM_T] - stat[CS_TEAM_CT] >= 2) {
 		if (team == CS_TEAM_T) {
-//			server_print("Switching victim (%d) to CS_TEAM_CT", victim)
 			cs_set_user_team(victim, CS_TEAM_CT)
 			fakechat_to(victim, "Mostantol CT vagy!")
 			fakechat_to(victim, "Mostantol CT vagy!")

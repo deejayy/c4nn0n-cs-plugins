@@ -58,20 +58,21 @@ public sic_menu_handle(id, key)
 			case 2: {
 				// TODO: cheater announce, vadaszat
 				sic_userlist_setaccess(target, PF_MUTED | PF_BLOCKED, 0, BAN_TYPE_PERMANENT)
-				client_cmd(p_id, "m_yaw 0.022")
+				client_cmd(target, "m_yaw 0.022")
 			}
 			case 4: {
 				if (g_shootblocked[target]) {
 					sic_blockshoot_player(target, id, 0)
-					client_cmd(p_id, "m_yaw 0.022")
+					client_cmd(target, "m_yaw 0.022")
 				} else {
 					sic_blockshoot_player(target, id, 1)
-					client_cmd(p_id, "m_yaw 0.001")
+					client_cmd(target, "m_yaw 0.001")
 				}
 				redisplay = 1
 			}
 			case 7: {
-				// TODO: nuke, todo?
+				sic_userlist_setaccess(target, PF_MUTED | PF_BLOCKED, 0, BAN_TYPE_PERMANENT)
+				sic_userlist_nuke(target, id)
 			}
 			default: {
 				//

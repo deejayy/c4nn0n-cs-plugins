@@ -174,6 +174,9 @@ public sic_userinfo_client_damage(attacker, victim, damage, wpnindex, hitplace, 
 	if (pi_v[pi_health] <= 0) {
 		g_user_kills [attacker]++;
 		g_user_deaths[victim  ]++;
+		if (g_user_kills[attacker] == 16) {
+			sic_cheats_check_score()
+		}
 	}
 
 	if (wpnindex != CSW_HEGRENADE) {
