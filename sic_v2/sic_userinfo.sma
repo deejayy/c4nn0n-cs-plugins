@@ -73,7 +73,7 @@ public Float:sic_userinfo_calc_score(pi[])
 	new Float:s_kn = pi[pi_kills] * 1.0
 	new Float:s_d  = pi[pi_deaths] > 0 ? pi[pi_deaths] * 1.0 : 1.0
 	new Float:s_t  = pi[pi_time] * 1.0 + 1.0
-	new Float:s_h  = pi[pi_hs] * 1.0
+	new Float:s_h  = pi[pi_hk] * 1.0
 	new Float:s_w  = pi[pi_ws] * 1.0
 	new Float:s_wk = pi[pi_wk] * 1.0
 
@@ -158,6 +158,9 @@ public sic_userinfo_logstring(id, logstring[], logstring_length)
 {
 	new pi[playerinfo]
 	sic_userinfo_fetchall(id, pi)
+	if (!id) {
+		pi[pi_auth] = "BOT"
+	}
 	sic_userinfo_logstring_b(pi, logstring, logstring_length)
 }
 
@@ -230,7 +233,7 @@ public sic_userinfo_listrow(pi[], row[], len)
 	} else {
 		p_scorestr = "0.00"
 	}
-	format(tmpl, charsmax(tmpl), "#%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s", "%-5d",        "%-5s",     "%32s",        "%4d",       "%4d",          "%4d",     "%4d",     "%4d",     "%4d",     "%4s",                                  "%20s",       "%8s",         "%4d",        "%4d",       "%4d",         "%4d",        "%-7s",                  "%4d",        "%22s",    "%-8s")
+	format(tmpl, charsmax(tmpl), "#%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s", "%-5d",       "%-5s",     "%32s",        "%4d",       "%4d",          "%4d",     "%4d",     "%4d",     "%4d",     "%4s",                                  "%20s",       "%8s",         "%4d",        "%4d",       "%4d",         "%4d",        "%-7s",                  "%4d",        "%22s",    "%d")
 //	server_print(tmpl,                                                                           "ID",         "Score",    "Player name", "Kill",      "Dead",         "HS",      "HK",      "WS",      "WK",      "Team",                                 "Auth",       sic_uniq_key,  "Ping",       "Loss",      "Hp",          "Armr",       "Weapon",                "Time",       "IP:Port", "Flags")
 	format(row, len, tmpl,                                                                       pi[pi_userid], p_scorestr, pi[pi_name],   pi[pi_kills], pi[pi_deaths], pi[pi_hs], pi[pi_hk], pi[pi_ws], pi[pi_wk], c_teamnames_short[CsTeams:pi[pi_team]], pi[pi_auth], pi[pi_cl_uid],  pi[pi_ping], pi[pi_loss], pi[pi_health], pi[pi_armor], c_weapons[pi[pi_weapon]], pi[pi_time], pi[pi_ip], pi[pi_flags])
 }
@@ -276,7 +279,7 @@ public sic_userlist_logsync_player(id)
 	sic_userinfo_fetchall(id, pi)
 	sic_userinfo_logstring_b(pi, lstr, charsmax(lstr))
 
-	log_message("%s logsync (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (hit ^"%d^") (hit_head ^"%d^") (hit_wall ^"%d^") (kill ^"%d^") (kill_head ^"%d^") (kill_wall ^"%d^") (shot ^"%d^") (death ^"%d^") (time ^"%d^")", lstr, pi[pi_cl_uid], pi[pi_ip], 0, 0, 0, pi[pi_ws], pi[pi_kills], pi[pi_hs], pi[pi_wk], 0, pi[pi_deaths], pi[pi_time])
+	log_message("%s logsync (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (hit ^"%d^") (hit_head ^"%d^") (hit_wall ^"%d^") (kill ^"%d^") (kill_head ^"%d^") (kill_wall ^"%d^") (shot ^"%d^") (death ^"%d^") (time ^"%d^")", lstr, pi[pi_cl_uid], pi[pi_ip], 0, 0, 0, pi[pi_ws], pi[pi_kills], pi[pi_hk], pi[pi_wk], 0, pi[pi_deaths], pi[pi_time])
 }
 
 public sic_userlist_logsync() {

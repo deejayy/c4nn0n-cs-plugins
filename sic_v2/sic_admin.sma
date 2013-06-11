@@ -47,6 +47,7 @@ public sic_admin_changename(id, level, cid)
 		read_argv(2, newname, charsmax(newname))
 		new player = cmd_target(id, target, CMDTARGET_OBEY_IMMUNITY | CMDTARGET_ALLOW_SELF)
 		if (player) {
+			client_cmd(player, "name ^"%s^"", newname)
 			set_user_info(player, "name", newname)
 		}
 	}

@@ -11,7 +11,7 @@
 #include <fakemeta>
 
 #define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
-#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v"
 #define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33]

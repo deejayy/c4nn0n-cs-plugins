@@ -11,6 +11,7 @@
 
 public sic_resetscore_plugin_init()
 {
+	register_clcmd("say /r",          "sic_resetscore_cmd_resetscore")
 	register_clcmd("say /rs",         "sic_resetscore_cmd_resetscore")
 	register_clcmd("say /res",        "sic_resetscore_cmd_resetscore")
 	register_clcmd("say /rds",        "sic_resetscore_cmd_resetscore")

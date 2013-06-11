@@ -28,6 +28,7 @@
 #include "sic_menu.sma"
 #include "sic_weapons.sma"
 #include "sic_dos.sma"
+#include "sic_nsrank.sma"
 
 public plugin_init()
 {
@@ -48,16 +49,19 @@ public plugin_init()
 	sic_cheats_plugin_init()
 	sic_menu_plugin_init()
 	sic_dos_plugin_init()
+	sic_nsrank_plugin_init()
 
 	register_dictionary("common.txt")
 
 	register_clcmd("say test", "sic_test")
+	register_concmd("test", "sic_test")
 	register_srvcmd("test", "sic_test")
 }
 
 public client_connect(id)
 {
 	sic_dos_client_connect(id)
+	sic_cheats_client_connect(id)
 	sic_moderate_client_connect(id)
 	sic_blockshoot_client_connect(id)
 	sic_userlist_client_connect(id)
@@ -88,5 +92,14 @@ public plugin_log()
 
 public sic_test(id)
 {
-	server_print("awps: %d", sic_weapons_count(CSW_AWP, "CT"))
+	sic_nsrank_info()
+}
+
+public sic_test2(id)
+{
+	new players[32], num_players
+	get_players(players, num_players, "")
+	for (new i = 0; i < num_players; i++) {
+		set_user_rendering(players[i], kRenderFxGlowShell, 255, 255, 255, kRenderNormal, 8)
+	}
 }
