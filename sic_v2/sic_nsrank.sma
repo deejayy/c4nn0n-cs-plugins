@@ -11,9 +11,11 @@
 
 public sic_nsrank_plugin_init()
 {
-	register_clcmd("say /rank", "sic_nsrank_cmd_nsrank")
-	register_clcmd("say /info", "sic_nsrank_cmd_nsinfo")
-	set_task(180.0, "sic_nsrank_info", 74205, "", 0, "b", 0)
+	register_clcmd("say /rank",  "sic_nsrank_cmd_nsrank")
+	register_clcmd("say /info",  "sic_nsrank_cmd_nsinfo")
+	register_clcmd("say /cs16",  "sic_nsrank_cmd_nsinfo")
+	register_clcmd("say /cs1.6", "sic_nsrank_cmd_nsinfo")
+	set_task(90.0, "sic_nsrank_info", 74205, "", 0, "b", 0)
 }
 
 public sic_nsrank_cmd_nsrank(id)
@@ -36,13 +38,14 @@ public sic_nsrank_cmd_nsinfo(id)
 
 public sic_nsrank_info()
 {
-	new auth[33], players[32], num_players
+	new auth[33], name[33], players[32], num_players
 
 	get_players(players, num_players, "")
 	for (new i = 0; i < num_players; i++) {
 		get_user_authid(players[i], auth, charsmax(auth))
+		get_user_name(players[i], name, charsmax(name))
 		if (contain(auth, "_ID_LAN") > 0) {
-			sic_announce(players[i], "Legujabb CS 1.6! Letoltes: http://csdm-hu.sytes.net ! /info")
+			sic_announce(players[i], "%s! Elavult CS-d van, tolts le ujabbat! http://csdm-hu.sytes.net ! Say: /cs16 vagy /info", name)
 		}
 	}
 }

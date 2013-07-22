@@ -8,8 +8,8 @@
 
 #include <cstrike>
 
-#define stripkeys_l 42
-new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "cl_lc", "cl_lw", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
+#define stripkeys_l 40
+new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
 
 new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
 new c_teamnames_short[CsTeams][] = { "", "T", "CT", "SPEC" }
@@ -145,6 +145,13 @@ public sic_userinfo_client_connect(id)
 	g_user_hk[id] = 0
 	g_user_ws[id] = 0
 	g_user_wk[id] = 0
+
+	if (!(is_user_bot(id))) {
+		message_begin(MSG_ALL, get_user_msgid("TeamInfo"), {0, 0, 0}, id)
+		write_byte(id)
+		write_string("UNASSIGNED")
+		message_end()
+	}
 }
 
 public sic_userinfo_stripinfo(id)
@@ -152,6 +159,8 @@ public sic_userinfo_stripinfo(id)
 	for (new i = 0; i < stripkeys_l; i++) {
 		client_cmd(id, "setinfo %s ^"^"", c_stripkeys[i])
 	}
+	client_cmd(id, "setinfo cl_lc ^"1^"")
+	client_cmd(id, "setinfo cl_lw ^"1^"")
 }
 
 public sic_userinfo_logstring(id, logstring[], logstring_length)

@@ -24,6 +24,7 @@
 #include <sic_announce>
 
 #define AWP_LIMIT 2
+#define AUTO_LIMIT 2
 
 new c_teamnames_short[CsTeams][] = { "", "T", "CT", "SPEC" }
 
@@ -816,9 +817,15 @@ GiveUserFullWeapon(id, const wp[])
 
 	new CsTeams:team = cs_get_user_team(id)
 	new awpcount = sic_weapons_count(CSW_AWP, c_teamnames_short[team])
+	new autocount = sic_weapons_count(CSW_SG550, c_teamnames_short[team]) + sic_weapons_count(CSW_G3SG1, c_teamnames_short[team])
 
 	if (awpcount >= AWP_LIMIT && equal(wp, "weapon_awp")) {
 		sic_announce(id, "AWP Limit csapatonkent %d darab! Uj fegyver: /guns", AWP_LIMIT)
+		return
+	}
+
+	if (autocount >= AUTO_LIMIT && (equal(wp, "weapon_g3sg1") || equal(wp, "weapon_sg550"))) {
+		sic_announce(id, "AUTO Limit csapatonkent %d darab! Uj fegyver: /guns", AUTO_LIMIT)
 		return
 	}
 

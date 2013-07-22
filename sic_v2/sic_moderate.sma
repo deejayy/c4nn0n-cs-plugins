@@ -10,8 +10,9 @@
 #include <regex>
 #include <fakemeta>
 
-#define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG"
-#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v"
+#define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG|\.ro|\.sk"
+#define spam_pattern_name  "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG|\.ro|\.sk|admin|ADMIN"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]"
 #define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33]
@@ -65,6 +66,7 @@ public sic_modereate_cmd_unmute(id, level, cid)
 public sic_moderate_mute(player, id, mute)
 {
 	g_muted[player] = mute
+//	sic_userlist_setaccess(id, PF_MUTED, 0, BAN_TYPE_PERMANENT)
 
 	#if defined sic_userinfo_included
 		new lstr_a[128], lstr_p[128]
@@ -141,7 +143,7 @@ public sic_moderate_fm_cinfoc(id)
 			p_oldname = server_banner_name
 		}
 
-		if (sic_moderate_match(p_newname, spam_pattern, 1)) {
+		if (sic_moderate_match(p_newname, spam_pattern_name, 1)) {
 			set_user_info(id, "name", p_oldname)
 			sic_moderate_mute(id, 0, 1)
 			return FMRES_HANDLED

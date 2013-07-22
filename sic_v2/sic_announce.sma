@@ -32,16 +32,15 @@ public sic_announce_color(red, green, blue, id, text[], any:...)
 		show_dhudmessage(id, p_text)
 		show_dhudmessage(id, p_text)
 		show_dhudmessage(id, p_text)
-		client_print(id, print_chat, p_text)
 		if (task_exists(g_announce_reset_task)) {
 			g_announce_positions[id] += g_announce_increment
 		}
+	#endif
+
+	#if defined sic_fakechat_included
+		sic_colormessage(id, CC_GREEN, p_text)
 	#else
-		#if defined sic_fakechat_included
-			sic_colormessage(id, CC_GREEN, p_text)
-		#else
-			client_print(id, print_chat, p_text)
-		#endif
+		client_print(id, print_chat, p_text)
 	#endif
 }
 

@@ -54,7 +54,7 @@ public plugin_init()
 	register_dictionary("common.txt")
 
 	register_clcmd("say test", "sic_test")
-	register_concmd("test", "sic_test")
+//	register_concmd("test", "sic_test")
 	register_srvcmd("test", "sic_test")
 }
 
@@ -92,7 +92,7 @@ public plugin_log()
 
 public sic_test(id)
 {
-	sic_nsrank_info()
+	sic_colormessage(id, CC_GREEN, "lofasz");
 }
 
 public sic_test2(id)
