@@ -10,9 +10,9 @@
 #include <regex>
 #include <fakemeta>
 
-#define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG|\.ro|\.sk"
-#define spam_pattern_name  "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.COM|\.NET|\.HU\|\.org|\.ORG|\.ro|\.sk|admin|ADMIN"
-#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]"
+#define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|aim|off|wh|bot|kurva|kruva|kocsog|anyad|geci|csira|csics|fasz|kutya|kutza|retk|cig.ny|szar|gyoker|rohad|buzi"
+#define spam_pattern_name  "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|facebook|[a4]dm[i1]n|c[4a]nn[0o]n|sz*erver"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck"
 #define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33]
@@ -89,7 +89,7 @@ public sic_moderate_match(p_param[], pattern[], strip)
 		replace(p_text, charsmax(p_text), " ", "")
 	}
 
-	new Regex:p_regex = regex_match(p_text, pattern, p_ret, p_error, sizeof(p_error))
+	new Regex:p_regex = regex_match(p_text, pattern, p_ret, p_error, sizeof(p_error), "i")
 	if (p_regex >= REGEX_OK) {
 		regex_free(p_regex)
 		return 1
@@ -100,11 +100,13 @@ public sic_moderate_match(p_param[], pattern[], strip)
 
 public sic_moderate_handle_say(id)
 {
-	new p_chat[128], p_param[128], lstr_p[128]
+	new p_name[33], p_stat[17], p_chat[128], p_param[128], lstr_p[128], players[32], num_players
 	read_args(p_param, charsmax(p_param))
 	remove_quotes(p_param)
 
 	sic_userinfo_logstring(id, lstr_p, charsmax(lstr_p))
+	get_user_name(id, p_name, charsmax(p_name))
+	sic_fakechat_getstatus(id, p_stat);
 
 	if (sic_moderate_match(p_param, ban_pattern, 0)) {
 		if (g_chatbanned[id] != 1) {
@@ -120,13 +122,19 @@ public sic_moderate_handle_say(id)
 
 	if ((g_muted[id] && !equali(p_param, "/", 1)) || sic_moderate_match(p_param, spam_pattern, 1)) {
 		format(p_chat, charsmax(p_chat), "MUTED: %s", p_param)
-		log_message("%s say ^"%s^"", lstr_p, p_chat)
 
 		#if defined sic_fakechat_included
 			sic_fakechat_echo(id, p_param)
 		#endif
 
+		log_message("%s say ^"%s^"", lstr_p, p_chat)
 		return PLUGIN_HANDLED
+	} else {
+		format(p_chat, charsmax(p_chat), "%s", p_param)
+		get_players(players, num_players, "")
+		for (new i = 0; i < num_players; i++) {
+//			sic_directmessage(players[i], "^x01%s^x03%s^x01 :  %s", p_stat, p_name, p_param)
+		}
 	}
 
 	return PLUGIN_CONTINUE
@@ -134,11 +142,14 @@ public sic_moderate_handle_say(id)
 
 public sic_moderate_fm_cinfoc(id)
 {
-	new p_oldname[33], p_newname[33]
+	new p_oldname[33], p_newname[33], p_auth[33]
 	pev(id, pev_netname, p_oldname, charsmax(p_oldname))
 	get_user_info(id, "name", p_newname, charsmax(p_newname))
 
-	if (!equal(p_oldname, p_newname)) {
+	get_user_authid(id, p_auth, charsmax(p_auth))
+	new p_flags = sic_userlist_get_flags(GF_AUTH, p_auth);
+
+	if (!equal(p_oldname, p_newname) && !(p_flags & PF_IMMUNITY)) {
 		if (strlen(p_oldname) == 0) {
 			p_oldname = server_banner_name
 		}

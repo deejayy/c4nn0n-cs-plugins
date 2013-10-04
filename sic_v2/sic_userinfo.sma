@@ -25,6 +25,8 @@ new g_user_wk[33]
 
 new g_mapname[33]
 
+new g_lastMessage[255]
+
 enum _:playerinfo
 {
 	pi_name[33],
@@ -32,6 +34,7 @@ enum _:playerinfo
 	pi_ip[17],
 	pi_ipport[25],
 	pi_cl_uid[17],
+	pi_sid[32],
 	pi_userid,
 	pi_kills,
 	pi_deaths,
@@ -61,6 +64,8 @@ public sic_userinfo_plugin_init()
 
 	register_concmd("sic_info", "sic_userinfo_list", ADMIN_RCON, "- userlista reloaded")
 	register_concmd("sic_ls", "sic_userlist_logsync",   ADMIN_RCON, "- irchez logsync")
+
+	OrpheuRegisterHook(OrpheuGetFunction("SV_DropClient"), "SV_DropClient");
 }
 
 public Float:sic_userinfo_calc_score(pi[])
@@ -83,7 +88,7 @@ public Float:sic_userinfo_calc_score(pi[])
 	p_score += 2.0 - s_p / 12.0		// 2 - players/12		2-5/12 = 1.58		2-19/12 = 0.41	kevesebb a jatekos,
 	p_score += s_w / s_k * 3.0		// wallhit / kill * 3	3/12*3 = 0.75		12/12*3 = 3		tobb a falon keresztul lott
 	p_score += s_wk / 3.0 - 1.0		// wallkill / 3 - 1		1/3-1 = -0.66		5/3-1 = 0.66	tobb a falon keresztul kill
-	p_score -= floatpower(17.0 / s_k, 2.0)			// 10 / kill			10/12 = 0.8			10/80 = 0.125	korrekcios szam, ki kell vonni
+	p_score -= floatpower(17.0 / s_k, 2.0)			// 17 / kill			17/12 = 1.4			17/80 = 0.2125	korrekcios szam, ki kell vonni
 
 	return p_score
 }
@@ -107,6 +112,7 @@ public sic_userinfo_fetchall(id, pi[])
 		}
 	
 		get_user_info(id, sic_uniq_key, pi[pi_cl_uid], charsmax(pi[pi_cl_uid]))
+		get_user_info(id, "*sid", pi[pi_sid], charsmax(pi[pi_sid]))
 		get_user_ping(id, pi[pi_ping], pi[pi_loss])
 
 		if (is_user_connected(id)) {
@@ -305,7 +311,24 @@ public sic_userlist_logsync() {
 	}
 }
 
+public OrpheuHookReturn:SV_DropClient(a, b, const szMessage[])
+{
+	copy(g_lastMessage, charsmax(g_lastMessage), szMessage);
+
+	if(equal(szMessage, "Reliable channel overflowed")) {
+		return OrpheuSupercede;
+	}
+
+	return OrpheuIgnored;
+}
+
 public sic_userinfo_client_disconnect(id)
 {
-	sic_userinfo_printlist(id)
+	new pi[playerinfo], lstr[128];
+	sic_userinfo_fetchall(id, pi);
+	sic_userinfo_logstring_b(pi, lstr, charsmax(lstr));
+
+	log_message("%s disconnected (reason ^"%s^")", lstr, g_lastMessage);
+
+	sic_userinfo_printlist(id);
 }

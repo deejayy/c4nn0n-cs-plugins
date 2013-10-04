@@ -20,6 +20,7 @@ enum (<<= 1)
 	PF_MUTED = 1,
 	PF_BLOCKED,
 	PF_BANNED,
+	PF_IMMUNITY,
 }
 
 // _get_flags

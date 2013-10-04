@@ -42,10 +42,9 @@ public sic_directmessage(id, text[], any:...)
 	message_end()
 }
 
-public sic_fakechat_echo(id, p_param[])
+public sic_fakechat_getstatus(id, p_stat[17])
 {
-	new p_name[33], p_stat[17], CsTeams:p_team
-	get_user_name(id, p_name, charsmax(p_name))
+	new CsTeams:p_team
 
 	if (!is_user_alive(id)) {
 		p_stat = "*DEAD* "
@@ -57,6 +56,14 @@ public sic_fakechat_echo(id, p_param[])
 			p_stat = "*SPEC* "
 		}
 	}
+}
+
+public sic_fakechat_echo(id, p_param[])
+{
+	new p_name[33], p_stat[17]
+	get_user_name(id, p_name, charsmax(p_name))
+
+	sic_fakechat_getstatus(id, p_stat);
 
 	sic_directmessage(id, "^x01%s^x03%s^x01 :  %s", p_stat, p_name, p_param)
 }

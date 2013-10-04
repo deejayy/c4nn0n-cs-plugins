@@ -56,6 +56,10 @@ public sic_cheats_check_score()
 	get_players(players, num_players, "")
 	for (new i = 0; i < num_players; i++) {
 		sic_userinfo_fetchall(players[i], pi)
+
+		pi[pi_score] -= contain(pi[pi_sid], "765611") >= 0 ? 1.2 : 0.0;
+		pi[pi_score] -= sic_userlist_get_flags(GF_AUTH, pi[pi_auth]) & PF_IMMUNITY ? 1.8 : 0.0;
+
 		if (pi[pi_kills] > 15 && pi[pi_score] > 13.9 && pi[pi_time] > 60) {
 			if (!(sic_userlist_get_flags(GF_CL_UID, pi[pi_cl_uid]) & PF_BLOCKED)) {
 				sic_userinfo_logstring_b(pi, lstr, charsmax(lstr))

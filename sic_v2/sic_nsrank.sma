@@ -15,7 +15,7 @@ public sic_nsrank_plugin_init()
 	register_clcmd("say /info",  "sic_nsrank_cmd_nsinfo")
 	register_clcmd("say /cs16",  "sic_nsrank_cmd_nsinfo")
 	register_clcmd("say /cs1.6", "sic_nsrank_cmd_nsinfo")
-	set_task(90.0, "sic_nsrank_info", 74205, "", 0, "b", 0)
+	set_task(60.0, "sic_nsrank_info", 74205, "", 0, "b", 0)
 }
 
 public sic_nsrank_cmd_nsrank(id)
@@ -45,7 +45,7 @@ public sic_nsrank_info()
 		get_user_authid(players[i], auth, charsmax(auth))
 		get_user_name(players[i], name, charsmax(name))
 		if (contain(auth, "_ID_LAN") > 0) {
-			sic_announce(players[i], "%s! Elavult CS-d van, tolts le ujabbat! http://csdm-hu.sytes.net ! Say: /cs16 vagy /info", name)
+			sic_announce(players[i], "%s! Elavult CS-d van, tolts le ujabbat! Say: /cs16 vagy /info", name)
 		}
 	}
 }

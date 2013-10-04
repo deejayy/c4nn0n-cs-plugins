@@ -24,7 +24,7 @@
 #include <sic_announce>
 
 #define AWP_LIMIT 2
-#define AUTO_LIMIT 2
+#define AUTO_LIMIT 1
 
 new c_teamnames_short[CsTeams][] = { "", "T", "CT", "SPEC" }
 
