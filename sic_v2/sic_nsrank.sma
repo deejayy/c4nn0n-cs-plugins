@@ -45,7 +45,7 @@ public sic_nsrank_info()
 		get_user_authid(players[i], auth, charsmax(auth))
 		get_user_name(players[i], name, charsmax(name))
 		if (contain(auth, "_ID_LAN") > 0) {
-			sic_announce(players[i], "%s! Elavult CS-d van, tolts le ujabbat! Say: /cs16 vagy /info", name)
+			sic_announce(players[i], "%s! Elavult CS-d van, januar 1-tol uj kell! Say: /cs16 vagy /info", name)
 		}
 	}
 }
