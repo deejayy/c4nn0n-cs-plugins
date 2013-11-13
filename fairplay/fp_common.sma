@@ -4,7 +4,7 @@
 
 #define fp_common_included
 
-#define com_userlist_playerlog "addons/amxmodx/logs/players.log"
+#define com_userlist_playerlog "players.log"
 #define stripkeys_l 40
 new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
 new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
@@ -13,7 +13,7 @@ new g_lastMessage[256]
 
 public plugin_init_common()
 {
-	OrpheuRegisterHook(OrpheuGetFunction("SV_DropClient"), "orpheu_dropclient");
+	// OrpheuRegisterHook(OrpheuGetFunction("SV_DropClient"), "orpheu_dropclient");
 
 	register_clcmd("say /admin",     "com_adminlist_command")
 	register_clcmd("say /admins",    "com_adminlist_command")
@@ -87,15 +87,21 @@ public com_set_cl_uid(id)
 
 public com_log_player(id)
 {
-	new cl_uid[8], ip[32], name[32], auth[32], map[32];
+	new auth[32];
 	get_user_authid(id, auth, charsmax(auth));
+
 	if (!equal(auth, "BOT")) {
+		new cl_uid[8], ip[32], name[32], map[32], logdir[255], logfile[255];
+
 		get_user_name(id, name, charsmax(name));
 		get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
 		get_user_ip(id, ip, charsmax(ip), 1);
 		get_mapname(map, charsmax(map));
 
-		com_putsd(com_userlist_playerlog, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
+		get_localinfo("amxx_logs", logdir, charsmax(logdir));
+		format(logfile, charsmax(logfile), "%s/%s", logdir, com_userlist_playerlog);
+
+		com_putsd(logfile, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
 	}
 }
 
