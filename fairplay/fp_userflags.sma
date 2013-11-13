@@ -12,8 +12,12 @@ enum (<<= 1)
 	UF_IMMUNITY,
 }
 
+new g_immune[33];
+
 client_putinserver_userflags(id)
 {
+	g_immune[id] = 0;
+
 	new pName[33], pAuth[33], pClUid[8], pIp[33], pUid;
 	new sName[65], sClUid[65];
 
@@ -30,6 +34,16 @@ client_putinserver_userflags(id)
 	data[0] = pUid;
 
 	db_query("uf_userflag_handler", data, dataSize, "select * from sic_active_user_flags where ufl_name = '%s' or ufl_auth = '%s' or ufl_ip = '%s' or ufl_cluid = '%s'", sName, pAuth, pIp, sClUid);
+}
+
+uf_set_immunity(id, value)
+{
+	g_immune[id] = value;
+}
+
+uf_get_immunity(id)
+{
+	return g_immune[id];
 }
 
 public uf_userflag_handler(failState, Handle:query, error[], errCode, data[], dataSize)
@@ -124,6 +138,14 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 
 	new fieldList[256], fieldValues[256]
 
+	if (!uf_bannable(dbValues[1])) {
+		flags[1] = 0;
+	}
+
+	if (equal(dbValues[3], "127.0.0.1")) {
+		flags[3] = 0;
+	}
+
 	for (i = 0; i < fieldCount; i++) {
 		if (flags[i] && dbValues[i][0]) {
 			format(fieldList, charsmax(fieldList), "%s%s%s, %s_flags, %s_minutes", fieldList, fieldList[0] ? ", " : "", dbFields[i], dbFields[i], dbFields[i])
@@ -132,4 +154,19 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 	}
 
 	db_silent_query("insert into sic_user_flags (ufl_created, ufl_reason, ufl_admin, %s) values (now(), '%s', '%s', %s)", fieldList, sReason, sAdminName, fieldValues);
+}
+
+uf_bannable(authid[])
+{
+	if (equal(authid, "BOT") ||
+		equal(authid, "") ||
+		equal(authid, "4294967295") ||
+		equal(authid, "STEAM_ID_LAN") ||
+		equal(authid, "VALVE_ID_LAN") ||
+		equal(authid, "STEAM_ID_PENDING") ||
+		equal(authid, "VALVE_ID_PENDING")) {
+		return 0
+	}
+
+	return 1
 }

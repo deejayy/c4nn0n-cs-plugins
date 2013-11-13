@@ -7,6 +7,7 @@
 #define com_userlist_playerlog "addons/amxmodx/logs/players.log"
 #define stripkeys_l 40
 new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
+new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
 
 new g_lastMessage[256]
 
@@ -14,14 +15,16 @@ public plugin_init_common()
 {
 	OrpheuRegisterHook(OrpheuGetFunction("SV_DropClient"), "orpheu_dropclient");
 
-	register_clcmd("say /admin",     "com_adminlist_cmd_adminlist")
-	register_clcmd("say /admins",    "com_adminlist_cmd_adminlist")
-	register_clcmd("say /adminlist", "com_adminlist_cmd_adminlist")
-	register_clcmd("say admins",     "com_adminlist_cmd_adminlist")
-	register_clcmd("say adminlist",  "com_adminlist_cmd_adminlist")
+	register_clcmd("say /admin",     "com_adminlist_command")
+	register_clcmd("say /admins",    "com_adminlist_command")
+	register_clcmd("say /adminlist", "com_adminlist_command")
+	register_clcmd("say admins",     "com_adminlist_command")
+	register_clcmd("say adminlist",  "com_adminlist_command")
+
+	register_clcmd("say /pos",       "com_write_position")
 }
 
-public com_adminlist_cmd_adminlist(id)
+public com_adminlist_command(id)
 {
 	ann_announce(id, "Online adminok: 1");
 	return PLUGIN_CONTINUE;
@@ -123,17 +126,94 @@ public plugin_log_common()
 	return PLUGIN_CONTINUE;
 }
 
+public log_message_getuser(id, user[], length)
+{
+	new name[33], auth[33], uid = 0, CsTeams:team = CS_TEAM_UNASSIGNED
+
+	if (id > 0) {
+		uid = get_user_userid(id);
+		if (get_user_time(id) > 5) {
+			team = cs_get_user_team(id);
+		}
+	
+		get_user_name(id, name, charsmax(name));
+		get_user_authid(id, auth, charsmax(auth));
+	} else {
+		get_cvar_string("hostname", name, charsmax(name));
+		auth = "BOT";
+	}
+
+	format(user, length, "^"%s<%d><%s><%s>^"", name, uid, auth, c_teamnames[team]);
+}
 
 public log_message_user(id, text[], any:...)
 {
-	new p_text[1024];
+	new p_text[1024], user[128];
 	vformat(p_text, charsmax(p_text), text, 3);
+	log_message_getuser(id, user, charsmax(user));
 
-	log_message("%s %s", "--TODO--", p_text);
+	log_message("%s %s", user, p_text);
+}
+
+public log_message_user2(id, id2, event[], text[], any:...)
+{
+	new p_text[1024], user[128], user2[128];
+	vformat(p_text, charsmax(p_text), text, 5);
+	log_message_getuser(id, user, charsmax(user));
+	log_message_getuser(id2, user2, charsmax(user2));
+
+	log_message("%s %s %s %s", user, event, user2, p_text);
 }
 
 public client_disconnect_common(id)
 {
 	log_message_user(id, "disconnected (reason ^"%s^")", g_lastMessage);
 	// TODO: printstat
+}
+
+public client_putinserver_common(id)
+{
+	new cl_uid[8], ip[32];
+
+	get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
+	get_user_ip(id, ip, charsmax(ip), 1);
+
+	log_message_user(id, "entered the game (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^")", cl_uid, ip, 0);
+}
+
+public com_write_position(id)
+{
+	static Float:origin[3];
+
+	pev(id, pev_origin, origin);
+	server_print("%.4f, %.4f, %.4f", origin[0], origin[1], origin[2]);
+
+	return PLUGIN_HANDLED;
+}
+
+public com_weapons_count(wep, team[])
+{
+	new players[32], num_players, p_weapons[32], num = 0, count = 0
+
+	get_players(players, num_players, "e", team)
+	for (new i = 0; i < num_players; i++) {
+		num = 0
+		get_user_weapons(players[i], p_weapons, num)
+		for (new j = 0; j < num; j++) {
+			if (p_weapons[j] == wep) {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
+// 76561197966126325
+public com_has_steam(id)
+{
+	new sid[65];
+	get_user_info(id, "*sid", sid, charsmax(sid));
+
+	return contain(sid, "765611") >= 0 ? 1 : 0;
 }

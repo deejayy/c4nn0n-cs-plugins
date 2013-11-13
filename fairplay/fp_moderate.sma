@@ -5,7 +5,9 @@
 #define fp_moderate_included
 
 #define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|aim|off|wh|bot|kurva|kruva|kocsog|anyad|geci|csira|csics|fasz|kutya|kutza|retk|cig.ny|szar|gyoker|rohad|buzi"
+#define spam_pattern_name  "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|facebook|[a4]dm[i1]n|c[4a]nn[0o]n|sz*erver"
 #define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck|Russian.Cheaters.com"
+#define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33];
 
@@ -23,6 +25,8 @@ public plugin_init_moderate()
 {
 	register_clcmd("say",      "mod_say_command");
 	register_clcmd("say_team", "mod_say_command");
+
+	register_forward(FM_ClientUserInfoChanged, "mod_userinfochanged")
 }
 
 public client_connect_moderate(id)
@@ -69,4 +73,25 @@ public mod_regex_match(p_param[], pattern[], strip)
 	return 0
 }
 
-// TODO: namechange
+public mod_userinfochanged(id)
+{
+	new p_oldname[33], p_newname[33];
+	pev(id, pev_netname, p_oldname, charsmax(p_oldname));
+	get_user_info(id, "name", p_newname, charsmax(p_newname));
+
+	if (!(equal(p_oldname, p_newname) || uf_get_immunity(id))) {
+		if (strlen(p_oldname) == 0) {
+			p_oldname = server_banner_name;
+		}
+
+		if (mod_regex_match(p_newname, spam_pattern_name, 1)) {
+			set_user_info(id, "name", p_oldname);
+			mod_set_muted(id, 1);
+			return FMRES_HANDLED;
+		}
+
+		return FMRES_HANDLED;
+	}
+
+	return FMRES_IGNORED;
+}

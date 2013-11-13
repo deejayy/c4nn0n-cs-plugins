@@ -19,7 +19,8 @@ new Float:g_announce_positions[33] = { const_ann_announce_position, ... }
 stock plugin_init_announce(taskinc = 0)
 {
 	register_cvar(cvar_ann_announce_time, "3.0")
-	set_task(get_cvar_float(cvar_ann_announce_time) + const_ann_announce_fadeout + 1.0, "ann_announce_resetposition", g_announce_reset_task + taskinc, "", 0, "b")
+	g_announce_reset_task += taskinc;
+	set_task(get_cvar_float(cvar_ann_announce_time) + const_ann_announce_fadeout + 1.0, "ann_announce_resetposition", g_announce_reset_task, "", 0, "b")
 }
 
 public ann_announce_color(red, green, blue, id, text[], any:...)

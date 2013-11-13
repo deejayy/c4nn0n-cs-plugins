@@ -16,7 +16,7 @@ public spc_cmd_gospec(id)
 	cs_set_user_team(id, CS_TEAM_SPECTATOR);
 	user_kill(id, 1);
 
-	// TODO: announce, how-to /back
+	ann_announce(id, "Visszaallni a /back paranccsal tudsz!");
 
 	return PLUGIN_CONTINUE;
 }

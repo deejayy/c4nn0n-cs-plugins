@@ -14,6 +14,7 @@
 #include <hamsandwich>
 #include <cstrike>
 #include <orpheu>
+#include <xs>
 
 #include "fp_dhudmessage.sma"
 #include "fp_visible.sma"
@@ -23,21 +24,19 @@
 #include "fp_commands.sma"
 #include "fp_moderate.sma"
 #include "fp_block.sma"
+#include "fp_stat.sma"
 #include "fp_cheats.sma"
 #include "fp_dos.sma"
 #include "fp_fakechat.sma"
 #include "fp_gospec.sma"
 #include "fp_resetscore.sma"
 #include "fp_announce.sma"
+#include "fp_menu.sma"
 
 public plugin_init()
 {
 	register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
 	log_message(BANNER);
-
-	register_srvcmd("testfp",    "testfp");
-	register_clcmd("testfp",     "testfp");
-	register_clcmd("say testfp", "testfp");
 
 	plugin_init_dos();
 	plugin_init_visible();
@@ -50,6 +49,8 @@ public plugin_init()
 	plugin_init_cheats();
 	plugin_init_fakechat();
 	plugin_init_announce(5);
+	plugin_init_stat();
+	plugin_init_menu();
 }
 
 public plugin_cfg()
@@ -64,16 +65,25 @@ public client_connect(id)
 	client_connect_cheats(id);
 	client_connect_dos(id);
 	client_connect_common(id);
+	client_connect_stat(id);
 }
 
 public client_putinserver(id)
 {
 	client_putinserver_userflags(id);
+	client_putinserver_common(id);
+}
+
+public client_damage(attacker, victim, damage, wpnindex, hitplace, ta)
+{
+	client_damage_stat(attacker, victim, damage, wpnindex, hitplace, ta);
 }
 
 public client_disconnect(id)
 {
 	client_disconnect_common(id);
+	client_disconnect_stat(id);
+	client_disconnect_menu(id);
 }
 
 public plugin_log()
@@ -84,8 +94,4 @@ public plugin_log()
 public plugin_end()
 {
 	db_close();
-}
-
-public testfp()
-{
 }

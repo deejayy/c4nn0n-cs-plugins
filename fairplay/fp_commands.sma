@@ -6,7 +6,6 @@
 
 #define BAN_REASON "Ki vagy tiltva innen / You are banned. Tovabbi info: http://csdm-hu.sytes.net/"
 
-// TODO: /admin
 plugin_init_commands()
 {
 	register_concmd("fp_mute",    "cmd_fp_mute_command",    ADMIN_RCON, "");
@@ -36,7 +35,7 @@ public cmd_fp_mute_command(id, level, cid)
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_mute(player);
+			cmd_fp_mute(player, id);
 		}
 	}
 }
@@ -50,7 +49,7 @@ public cmd_fp_unmute_command(id, level, cid)
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_unmute(player);
+			cmd_fp_unmute(player, id);
 		}
 	}
 }
@@ -64,7 +63,7 @@ public cmd_fp_block_command(id, level, cid)
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_block(player);
+			cmd_fp_block(player, id);
 		}
 	}
 }
@@ -78,7 +77,7 @@ public cmd_fp_unblock_command(id, level, cid)
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_unblock(player);
+			cmd_fp_unblock(player, id);
 		}
 	}
 }
@@ -92,7 +91,7 @@ public cmd_fp_kick_command(id, level, cid)
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_kick(player, reason);
+			cmd_fp_kick(player, reason, id);
 		}
 	}
 }
@@ -111,34 +110,52 @@ public cmd_fp_mute_permanent_command(id, level, cid)
 	}
 }
 
-public cmd_fp_immune_command()
+public cmd_fp_immune_command(id, level, cid)
 {
-	server_print(": immune");
+	if (cmd_access(id, level, cid, 1)) {
+		new target[33];
+		read_argv(1, target, charsmax(target));
+		new player = cmd_target(id, target);
+		if (player) {
+			cmd_fp_immune(player, id);
+		}
+	}
 }
 
-public cmd_fp_kick(id, reason[])
+public cmd_fp_immune(id, admin_id)
+{
+	log_message_user2(admin_id, id, "set immunity", "");
+	uf_set_immunity(id, 1);
+}
+
+public cmd_fp_kick(id, reason[], admin_id)
 {
 	new uid = get_user_userid(id);
+	log_message_user2(admin_id, id, "kicked", "reason (^"%s^")", reason);
 	server_cmd("kick #%d ^"%s^"", uid, reason);
 }
 
-public cmd_fp_mute(id)
+public cmd_fp_mute(id, admin_id)
 {
+	log_message_user2(admin_id, id, "muted", "");
 	mod_set_muted(id, 1);
 }
 
-public cmd_fp_unmute(id)
+public cmd_fp_unmute(id, admin_id)
 {
+	log_message_user2(admin_id, id, "unmuted", "");
 	mod_set_muted(id, 0);
 }
 
-public cmd_fp_block(id)
+public cmd_fp_block(id, admin_id)
 {
+	log_message_user2(admin_id, id, "shootblocked", "");
 	blk_set_blocked(id, 1);
 }
 
-public cmd_fp_unblock(id)
+public cmd_fp_unblock(id, admin_id)
 {
+	log_message_user2(admin_id, id, "unshootblocked", "");
 	blk_set_blocked(id, 0);
 }
 
@@ -219,7 +236,7 @@ public cmd_fp_exec_command(id, level, cid)
 		read_argv(2, command, charsmax(command))
 		new player = cmd_target(id, target, CMDTARGET_OBEY_IMMUNITY | CMDTARGET_ALLOW_SELF)
 		if (player) {
-			cmd_fp_exec(player, command)
+			cmd_fp_exec(player, command, id)
 		}
 	}
 }
@@ -230,35 +247,40 @@ public cmd_fp_changename(id, newname[])
 	set_user_info(id, "name", newname);
 }
 
-// TODO: log
-public cmd_fp_exec(id, command[])
+public cmd_fp_exec(id, command[], admin_id)
 {
-	client_cmd(id, command)
+	log_message_user2(admin_id, id, "client command", " (command ^"%s^")", command);
+	client_cmd(id, command);
 }
 
 public cmd_fp_mute_permanent(id, reason[], admin_id)
 {
+	log_message_user2(admin_id, id, "mute permanent", " (reason ^"%s^")", reason);
 	uf_write_userflag(id, {1,1,1,1}, {45,0,0,45}, reason[0] ? reason : "Permanent mute (requested)", admin_id);
 }
 
 public cmd_fp_block_permanent(id, reason[], admin_id)
 {
+	log_message_user2(admin_id, id, "block permanent", " (reason ^"%s^")", reason);
 	uf_write_userflag(id, {2,2,2,2}, {45,0,0,45}, reason[0] ? reason : "Shootblocked (requested)", admin_id);
 }
 
 public cmd_fp_ban(id, reason[], admin_id)
 {
+	log_message_user2(admin_id, id, "banned", " (reason ^"%s^")", reason);
 	uf_write_userflag(id, {4,4,4,4}, {45,45,45,45}, reason[0] ? reason : BAN_REASON, admin_id);
-	cmd_fp_kick(id, reason[0] ? reason : BAN_REASON);
+	cmd_fp_kick(id, reason[0] ? reason : BAN_REASON, admin_id);
 }
 
 public cmd_fp_immune_permanent(id, reason[], admin_id)
 {
+	log_message_user2(admin_id, id, "immune permanent", " (reason ^"%s^")", reason);
 	uf_write_userflag(id, {0,8,0,0}, {0,0,0,0}, reason[0] ? reason : "VIP", admin_id);
 }
 
 public cmd_fp_punish(id, reason[], admin_id)
 {
+	log_message_user2(admin_id, id, "punished", " (reason ^"%s^")", reason);
 	uf_write_userflag(id, {3,3,3,3}, {600,0,0,600}, reason[0] ? reason : "Punished (requested)", admin_id);
 	cmd_fp_ban(id, reason, admin_id);
 }
