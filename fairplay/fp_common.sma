@@ -88,13 +88,15 @@ public com_set_cl_uid(id)
 public com_log_player(id)
 {
 	new cl_uid[8], ip[32], name[32], auth[32], map[32];
-	get_user_name(id, name, charsmax(name));
 	get_user_authid(id, auth, charsmax(auth));
-	get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
-	get_user_ip(id, ip, charsmax(ip), 1);
-	get_mapname(map, charsmax(map));
+	if (!equal(auth, "BOT")) {
+		get_user_name(id, name, charsmax(name));
+		get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
+		get_user_ip(id, ip, charsmax(ip), 1);
+		get_mapname(map, charsmax(map));
 
-	com_putsd(com_userlist_playerlog, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
+		com_putsd(com_userlist_playerlog, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
+	}
 }
 
 public com_puts(file[], text[], any:...)
@@ -168,7 +170,7 @@ public log_message_user2(id, id2, event[], text[], any:...)
 public client_disconnect_common(id)
 {
 	log_message_user(id, "disconnected (reason ^"%s^")", g_lastMessage);
-	// TODO: printstat
+	st_printstat(id);
 }
 
 public client_putinserver_common(id)

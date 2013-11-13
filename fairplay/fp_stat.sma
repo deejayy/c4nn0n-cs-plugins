@@ -112,11 +112,16 @@ public Float:maxf(Float:a, Float:b)
 	return b;
 }
 
-public st_printstat()
+// TODO st_printstat()
+public st_printstat(id)
 {
-	new players[32], num_players;
-	get_players(players, num_players);
-	for (new i = 0; i < num_players; i++) {
+	new players[32], num_players = 1, i = 0;
+	if (id > 0) {
+		players[i] = id;
+	} else {
+		get_players(players, num_players);
+	}
+	for (i = 0; i < num_players; i++) {
 		server_print("%d: %.2f", players[i], st_score(players[i]));
 	}
 }

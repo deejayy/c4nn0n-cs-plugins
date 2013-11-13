@@ -41,8 +41,7 @@ public mod_say_command(id)
 	remove_quotes(p_param);
 
 	if (mod_get_muted(id) || mod_regex_match(p_param, spam_pattern, 1)) {
-		// TODO: log
-		server_print("MUTED: %s", p_param);
+		log_message_user(id, "say ^"MUTED: %s^"", p_param);
 		fch_echo(id, p_param);
 		return PLUGIN_HANDLED;
 	}
