@@ -29,6 +29,24 @@ public client_connect_stat(id)
 
 public client_disconnect_stat(id)
 {
+	new auth[33];
+	get_user_authid(id, auth, charsmax(auth));
+
+	if (!equal(auth, "BOT")) {
+		new uid, time, Float:score;
+
+		uid = get_user_userid(id);
+		time = get_user_time(id);
+		score = st_score(id);
+
+		new serverid[16], sServerid[33];
+		get_cvar_string(com_serverid_cvar, serverid, charsmax(serverid));
+		db_quote_string(sServerid, charsmax(sServerid), serverid);
+
+		db_silent_query("insert into sic_stat (stt_player_plr_id, stt_score, stt_kill, stt_kill_head, stt_kill_wall, stt_hit, stt_hit_head, stt_hit_wall, stt_death, stt_time) values ((select plr_id from sic_players left join sic_servers on plr_server_srv_id = srv_id where plr_uid = %d and srv_serverid = '%s' order by plr_connect desc limit 1), %.2f, %d, %d, %d, %d, %d, %d, %d, %d)",
+			uid, sServerid, score, floatround(g_kill[id]), floatround(g_headkill[id]), floatround(g_wallkill[id]), floatround(g_hit[id]), floatround(g_headhit[id]), floatround(g_wallhit[id]), floatround(g_death[id]), time);
+	}
+
 	st_clearstat(id);
 }
 

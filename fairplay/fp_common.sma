@@ -5,40 +5,32 @@
 #define fp_common_included
 
 #define com_userlist_playerlog "players.log"
+#define com_serverid_cvar      "fp_serverid"
 #define stripkeys_l 40
 new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
 new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
 
-new g_lastMessage[256]
-
 public plugin_init_common()
 {
-	// OrpheuRegisterHook(OrpheuGetFunction("SV_DropClient"), "orpheu_dropclient");
+	register_clcmd("say /admin",     "com_adminlist_command");
+	register_clcmd("say /admins",    "com_adminlist_command");
+	register_clcmd("say /adminlist", "com_adminlist_command");
+	register_clcmd("say admins",     "com_adminlist_command");
+	register_clcmd("say adminlist",  "com_adminlist_command");
 
-	register_clcmd("say /admin",     "com_adminlist_command")
-	register_clcmd("say /admins",    "com_adminlist_command")
-	register_clcmd("say /adminlist", "com_adminlist_command")
-	register_clcmd("say admins",     "com_adminlist_command")
-	register_clcmd("say adminlist",  "com_adminlist_command")
+	register_clcmd("say /pos",       "com_write_position");
 
-	register_clcmd("say /pos",       "com_write_position")
+	new serverid[16], hostname[128];
+	get_cvar_string("hostname", hostname, charsmax(hostname));
+	com_generate_cl_uid(serverid, 8, "%s, %s", hostname, get_cvar_num("port"));
+
+	register_cvar(com_serverid_cvar, serverid, 1);
 }
 
 public com_adminlist_command(id)
 {
 	ann_announce(id, "Online adminok: 1");
 	return PLUGIN_CONTINUE;
-}
-
-public OrpheuHookReturn:orpheu_dropclient(a, b, const szMessage[])
-{
-	copy(g_lastMessage, charsmax(g_lastMessage), szMessage);
-
-	if(equal(szMessage, "Reliable channel overflowed")) {
-		return OrpheuSupercede;
-	}
-
-	return OrpheuIgnored;
 }
 
 public client_connect_common(id)
@@ -91,17 +83,29 @@ public com_log_player(id)
 	get_user_authid(id, auth, charsmax(auth));
 
 	if (!equal(auth, "BOT")) {
-		new cl_uid[8], ip[32], name[32], map[32], logdir[255], logfile[255];
+		new cl_uid[8], ip[32], name[32], map[32], logdir[255], logfile[255], sName[65], sCluid[32], uid;
 
 		get_user_name(id, name, charsmax(name));
 		get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
 		get_user_ip(id, ip, charsmax(ip), 1);
 		get_mapname(map, charsmax(map));
+		uid = get_user_userid(id);
 
 		get_localinfo("amxx_logs", logdir, charsmax(logdir));
 		format(logfile, charsmax(logfile), "%s/%s", logdir, com_userlist_playerlog);
 
 		com_putsd(logfile, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
+
+
+		db_quote_string(sName, charsmax(sName), name);
+		db_quote_string(sCluid, charsmax(sCluid), cl_uid);
+
+		new serverid[16], sServerid[33];
+		get_cvar_string(com_serverid_cvar, serverid, charsmax(serverid));
+		db_quote_string(sServerid, charsmax(sServerid), serverid);
+
+		db_silent_query("insert into sic_players (plr_connect, plr_map_map_id, plr_server_srv_id, plr_name, plr_auth, plr_ip, plr_cl_uid, plr_uid) values (now(), (select map_id from sic_maps where map_name = '%s'), (select srv_id from sic_servers where srv_serverid = '%s'), '%s', '%s', '%s', '%s', %d)",
+			map, sServerid, sName, auth, ip, sCluid, uid);
 	}
 }
 
@@ -127,7 +131,7 @@ public plugin_log_common()
 	new message[255];
 	read_logdata(message, sizeof(message)-1);
 
-	if (contain(message, " attacked ") != -1 || contain(message, " killed ") != -1 || contain(message, " entered the game") != -1 || contain(message, " disconnected") != -1) {
+	if (contain(message, " attacked ") != -1 || contain(message, " killed ") != -1 || contain(message, " entered the game") != -1) {
 		return PLUGIN_HANDLED;
 	}
 
@@ -175,7 +179,6 @@ public log_message_user2(id, id2, event[], text[], any:...)
 
 public client_disconnect_common(id)
 {
-	log_message_user(id, "disconnected (reason ^"%s^")", g_lastMessage);
 	st_printstat(id);
 }
 
