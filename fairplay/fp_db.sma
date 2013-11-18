@@ -10,6 +10,7 @@
 #define SQL_USER "cs_fp"
 #define SQL_PASS "cs_fp"
 #define SQL_DB "cs_fp"
+#define SQL_LOGFILE "database-log.sql"
 
 new Handle:gTuple;
 
@@ -78,8 +79,12 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
  */
 db_silent_query(queryString[], any:...)
 {
-	new pQueryString[2048]
+	new pQueryString[2048], logdir[256], logfile[256];
 	vformat(pQueryString, charsmax(pQueryString), queryString, 2)
+
+	get_localinfo("amxx_logs", logdir, charsmax(logdir));
+	format(logfile, charsmax(logfile), "%s/%s", logdir, SQL_LOGFILE);
+	log_to_file(logfile, "%s;", pQueryString);
 
 	SQL_ThreadQuery(gTuple, "db_handle_errors", pQueryString);
 }
