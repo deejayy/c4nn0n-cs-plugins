@@ -11,6 +11,10 @@
 #define SQL_PASS "cs_fp"
 #define SQL_DB "cs_fp"
 #define SQL_LOGFILE "database-log.sql"
+#define SQL_ERRORFILE "database-error.log"
+
+new g_logfile[256];
+new g_errorlog[256];
 
 new Handle:gTuple;
 
@@ -27,6 +31,11 @@ db_init()
 	} else {
 		server_print("SQL_MakeDbTuple failed");
 	}
+
+	new logdir[256];
+	get_localinfo("amxx_logs", logdir, charsmax(logdir));
+	format(g_logfile, charsmax(g_logfile), "%s/%s", logdir, SQL_LOGFILE);
+	format(g_errorlog, charsmax(g_errorlog), "%s/%s", logdir, SQL_ERRORFILE);
 }
 
 /**
@@ -56,7 +65,8 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
 	new finalQuery[2048];
 
 	SQL_GetQueryString(query, finalQuery, charsmax(finalQuery));
-	server_print("SQL_GetQueryString: %s", finalQuery);
+	log_to_file(g_logfile, "%s;", finalQuery);
+//	server_print("SQL_GetQueryString: %s", finalQuery);
 
 	if (failState == TQUERY_CONNECT_FAILED) {
 		server_print("SQL_ThreadQuery: Could not connect to SQL database.");
@@ -66,6 +76,7 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
 
 	if (errCode) {
 		server_print("Error on query: %s", error);
+		log_to_file(g_errorlog, "%s;", error);
 	}
 }
 
@@ -79,12 +90,8 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
  */
 db_silent_query(queryString[], any:...)
 {
-	new pQueryString[2048], logdir[256], logfile[256];
+	new pQueryString[2048];
 	vformat(pQueryString, charsmax(pQueryString), queryString, 2)
-
-	get_localinfo("amxx_logs", logdir, charsmax(logdir));
-	format(logfile, charsmax(logfile), "%s/%s", logdir, SQL_LOGFILE);
-	log_to_file(logfile, "%s;", pQueryString);
 
 	SQL_ThreadQuery(gTuple, "db_handle_errors", pQueryString);
 }
