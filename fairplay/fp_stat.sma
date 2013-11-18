@@ -100,23 +100,24 @@ public Float:st_score(id)
 {
 	new Float:time = get_user_time(id) * 1.0;
 
-	new Float:s_k  = maxf(g_kill[id], 10.0);
-	new Float:s_d  = maxf(g_death[id], 3.0);
-	new Float:s_t  = maxf(time, 60.0);
+	new Float:s_k  = maxf(g_kill[id],     10.0);
+	new Float:s_d  = maxf(g_death[id],     3.0);
+	new Float:s_t  = maxf(time,           60.0);
 	new Float:s_hk = g_headkill[id];
 	new Float:s_hs = g_headhit[id];
 	new Float:s_wk = g_wallkill[id];
 	new Float:s_ws = g_wallhit[id];
 
-	new Float:score2 = 0.0
+	new Float:score2 =    0.0
 		+ xs_sqrt(s_k / s_d)
 		+ (8.0 * s_hk + 3.0 * s_ws + 15.0 * s_wk) / s_k
 		+ 45.0 * s_k / s_t
 		+ s_wk / 3.0
 		- floatpower(17.0 / s_k, 2.0)
-		+ floatpower((500.0 + s_k) / 500.0, 2.0) * (s_hk / 150.0)
-		+ floatpower(s_hs / s_k - 1.0, 2.0)
-		- maxf(0.0, 6.0 - s_t / 60.0)
+		+ floatpower((500.0 + s_k) / 500.0, 2.0) * (s_hk / 200.0)
+//		+ floatpower(s_hs / s_k - 1.0, 2.0)
+		+ floatpower((s_hs - s_hk) / s_k, 2.0)
+		- maxf(0.0, 6.0 - s_t / 12.0)
 		- 1.0;
 
 	return score2;
