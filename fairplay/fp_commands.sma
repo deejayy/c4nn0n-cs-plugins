@@ -24,6 +24,15 @@ plugin_init_commands()
 	register_concmd("fp_punish",  "cmd_fp_punish_command",     ADMIN_RCON, "");
 	register_concmd("fp_exec",    "cmd_fp_exec_command",       ADMIN_RCON, "");
 	register_concmd("fp_cname",   "cmd_fp_changename_command", ADMIN_RCON, "");
+
+	// backward compatibility for sic v1.42 irc gw
+	register_concmd("bsh",        "cmd_fp_block_command",   ADMIN_RCON, "");
+	register_concmd("unbsh",      "cmd_fp_unblock_command", ADMIN_RCON, "");
+	register_concmd("mute",       "cmd_fp_mute_command",    ADMIN_RCON, "");
+	register_concmd("unmute",     "cmd_fp_unmute_command",  ADMIN_RCON, "");
+	register_concmd("spn",        "cmd_fp_punish_command",     ADMIN_RCON, "");
+	register_concmd("cexec",      "cmd_fp_exec_command",       ADMIN_RCON, "");
+	register_concmd("cname",      "cmd_fp_changename_command", ADMIN_RCON, "");
 }
 
 public cmd_fp_mute_command(id, level, cid)
