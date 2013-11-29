@@ -14,6 +14,8 @@
 #include <hamsandwich>
 #include <cstrike>
 #include <xs>
+#include <fun>
+#include <engine>
 
 #include "fp_dhudmessage.sma"
 #include "fp_visible.sma"
@@ -59,10 +61,10 @@ public plugin_cfg()
 
 public client_connect(id)
 {
+	client_connect_dos(id);
 	client_connect_moderate(id);
 	client_connect_block(id);
 	client_connect_cheats(id);
-	client_connect_dos(id);
 	client_connect_common(id);
 	client_connect_stat(id);
 }

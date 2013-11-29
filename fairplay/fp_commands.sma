@@ -6,6 +6,8 @@
 
 #define BAN_REASON "Ki vagy tiltva innen / You are banned. Tovabbi info: http://csdm-hu.sytes.net/"
 
+new g_hunter[33];
+
 plugin_init_commands()
 {
 	register_concmd("fp_mute",    "cmd_fp_mute_command",    ADMIN_RCON, "");
@@ -33,6 +35,31 @@ plugin_init_commands()
 	register_concmd("spn",        "cmd_fp_punish_command",     ADMIN_RCON, "");
 	register_concmd("cexec",      "cmd_fp_exec_command",       ADMIN_RCON, "");
 	register_concmd("cname",      "cmd_fp_changename_command", ADMIN_RCON, "");
+	register_concmd("hideme",     "cmd_fp_hideme", ADMIN_BAN, "");
+}
+
+public client_connect_commands(id)
+{
+	g_hunter[id] = 0;
+}
+
+public client_disconnect_commands(id)
+{
+	g_hunter[id] = 0;
+}
+
+public cmd_fp_hideme(id, level, cid)
+{
+	if (cmd_access(id, level, cid, 1)) {
+		client_print(id, print_chat, "inviso on, silent step on, speed on");
+//		set_user_rendering(id, kRenderFxGlowShell, 0, 0, 0, kRenderTransAlpha, 0);
+		set_user_rendering(id, kRenderFxGlowShell, 255, 0, 0, kRenderTransAdd, 0);
+		entity_set_int(id, EV_INT_flTimeStepSound, 999);
+		set_user_maxspeed(id, 800.0);
+// 		set_user_gravity(id, 200.0);
+	} else {
+		client_print(id, print_chat, "no access");
+	}
 }
 
 public cmd_fp_mute_command(id, level, cid)
