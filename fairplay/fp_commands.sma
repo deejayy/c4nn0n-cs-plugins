@@ -285,38 +285,38 @@ public cmd_fp_changename(id, newname[])
 
 public cmd_fp_exec(id, command[], admin_id)
 {
-	log_message_user2(admin_id, id, "client command", " (command ^"%s^")", command);
+	log_message_user2(admin_id, id, "client command", "(command ^"%s^")", command);
 	client_cmd(id, command);
 }
 
 public cmd_fp_mute_permanent(id, reason[], admin_id)
 {
-	log_message_user2(admin_id, id, "mute permanent", " (reason ^"%s^")", reason);
+	log_message_user2(admin_id, id, "mute permanent", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {1,1,1,1}, {45,0,0,45}, reason[0] ? reason : "Permanent mute (requested)", admin_id);
 }
 
 public cmd_fp_block_permanent(id, reason[], admin_id)
 {
-	log_message_user2(admin_id, id, "block permanent", " (reason ^"%s^")", reason);
+	log_message_user2(admin_id, id, "block permanent", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {2,2,2,2}, {45,0,0,45}, reason[0] ? reason : "Shootblocked (requested)", admin_id);
 }
 
 public cmd_fp_ban(id, reason[], admin_id)
 {
-	log_message_user2(admin_id, id, "banned", " (reason ^"%s^")", reason);
+	log_message_user2(admin_id, id, "banned", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {4,4,4,4}, {45,45,45,45}, reason[0] ? reason : BAN_REASON, admin_id);
 	cmd_fp_kick(id, reason[0] ? reason : BAN_REASON, admin_id);
 }
 
 public cmd_fp_immune_permanent(id, reason[], admin_id)
 {
-	log_message_user2(admin_id, id, "immune permanent", " (reason ^"%s^")", reason);
+	log_message_user2(admin_id, id, "immune permanent", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {0,8,0,0}, {0,0,0,0}, reason[0] ? reason : "VIP", admin_id);
 }
 
 public cmd_fp_punish(id, reason[], admin_id)
 {
-	log_message_user2(admin_id, id, "punished", " (reason ^"%s^")", reason);
+	log_message_user2(admin_id, id, "punished", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {3,3,3,3}, {600,0,0,600}, reason[0] ? reason : "Punished (requested)", admin_id);
 	cmd_fp_ban(id, reason, admin_id);
 }

@@ -10,6 +10,7 @@ enum (<<= 1)
 	UF_BLOCKED,
 	UF_BANNED,
 	UF_IMMUNITY,
+	UF_ADMIN,
 }
 
 new g_immune[33];
