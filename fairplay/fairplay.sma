@@ -33,6 +33,7 @@
 #include "fp_resetscore.sma"
 #include "fp_announce.sma"
 #include "fp_menu.sma"
+#include "fp_nsrank.sma"
 
 public plugin_init()
 {
@@ -52,6 +53,7 @@ public plugin_init()
 	plugin_init_announce(5);
 	plugin_init_stat();
 	plugin_init_menu();
+	sic_nsrank_plugin_init();
 }
 
 public plugin_cfg()
