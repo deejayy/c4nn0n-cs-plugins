@@ -167,7 +167,7 @@ public cmd_fp_immune(id, admin_id)
 public cmd_fp_kick(id, reason[], admin_id)
 {
 	new uid = get_user_userid(id);
-	log_message_user2(admin_id, id, "kicked", "reason (^"%s^")", reason);
+	log_message_user2(admin_id, id, "kicked", "(reason ^"%s^")", reason);
 	server_cmd("kick #%d ^"%s^"", uid, reason);
 }
 
