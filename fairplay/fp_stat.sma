@@ -73,7 +73,7 @@ public client_damage_stat(attacker, victim, damage, wpnindex, hitplace, ta)
 		g_death[victim]++;
 	}
 
-	if (wpnindex != CSW_HEGRENADE) {
+	if (wpnindex != CSW_HEGRENADE && wpnindex != CSW_C4) {
 		visible = vis_is_visible(attacker, victim);
 		if (hitplace == 1) {
 			g_headhit[attacker]++;
