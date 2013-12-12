@@ -116,7 +116,7 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 {
 	const fieldCount = 4
 	new dbFields[fieldCount][33] = {"ufl_name", "ufl_auth", "ufl_cluid", "ufl_ip"};
-	new dbValues[fieldCount][65]; // escaping can duplicate string's length
+	new dbValues[fieldCount][65]; // escaping can double string's length
 	new sReason[256], i;
 
 	new pName[33], pClUid[8], sAdminName[64];

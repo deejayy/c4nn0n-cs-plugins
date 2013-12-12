@@ -38,6 +38,7 @@ public client_connect_common(id)
 	com_stripinfo(id);
 	com_set_cl_uid(id);
 	com_log_player(id);
+	com_redirect(id);
 }
 
 public com_stripinfo(id)
@@ -106,6 +107,15 @@ public com_log_player(id)
 
 		db_silent_query("insert into sic_players (plr_connect, plr_map_map_id, plr_server_srv_id, plr_name, plr_auth, plr_ip, plr_cl_uid, plr_uid) values (now(), (select map_id from sic_maps where map_name = '%s'), (select srv_id from sic_servers where srv_serverid = '%s'), '%s', '%s', '%s', '%s', %d)",
 			map, sServerid, sName, auth, ip, sCluid, uid);
+	}
+}
+
+public com_redirect(id)
+{
+	new players[32], num_players, max = get_maxplayers();
+	get_players(players, num_players);
+	if (max - num_players <= 1) {
+		client_cmd(id, "connect 193.224.130.190:27025");
 	}
 }
 
