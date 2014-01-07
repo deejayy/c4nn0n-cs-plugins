@@ -46,6 +46,7 @@ public plugin_init()
 	plugin_init_resetscore();
 	plugin_init_gospec();
 	plugin_init_commands();
+	sic_nsrank_plugin_init();
 	plugin_init_moderate();
 	plugin_init_block();
 	plugin_init_cheats();
@@ -53,7 +54,6 @@ public plugin_init()
 	plugin_init_announce(5);
 	plugin_init_stat();
 	plugin_init_menu();
-	sic_nsrank_plugin_init();
 }
 
 public plugin_cfg()
