@@ -199,7 +199,7 @@ public client_putinserver_common(id)
 	get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
 	get_user_ip(id, ip, charsmax(ip), 1);
 
-	log_message_user(id, "entered the game (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^")", cl_uid, ip, 0);
+	log_message_user(id, "entered the game (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (steam ^"%d^")", cl_uid, ip, 0, com_has_steam(id));
 }
 
 public com_write_position(id)

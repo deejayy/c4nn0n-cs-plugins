@@ -161,7 +161,7 @@ public st_logsync()
 		time = get_user_time(id);
 		get_user_info(id, "cl_uid", cl_uid, charsmax(cl_uid));
 		get_user_ip(id, ip, charsmax(ip), 1);
-		log_message_user(id, "logsync (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (hit ^"%d^") (hit_head ^"%d^") (hit_wall ^"%d^") (kill ^"%d^") (kill_head ^"%d^") (kill_wall ^"%d^") (shot ^"%d^") (death ^"%d^") (time ^"%d^")",
-			cl_uid, ip, 0, floatround(g_hit[id]), floatround(g_headhit[id]), floatround(g_wallhit[id]), floatround(g_kill[id]), floatround(g_headkill[id]), floatround(g_wallkill[id]), 0, floatround(g_death[id]), time);
+		log_message_user(id, "logsync (cl_uid ^"%s^") (ip ^"%s^") (port ^"%d^") (hit ^"%d^") (hit_head ^"%d^") (hit_wall ^"%d^") (kill ^"%d^") (kill_head ^"%d^") (kill_wall ^"%d^") (shot ^"%d^") (death ^"%d^") (time ^"%d^") (steam ^"%d^")",
+			cl_uid, ip, 0, floatround(g_hit[id]), floatround(g_headhit[id]), floatround(g_wallhit[id]), floatround(g_kill[id]), floatround(g_headkill[id]), floatround(g_wallkill[id]), 0, floatround(g_death[id]), time, com_has_steam(id));
 	}
 }
