@@ -65,7 +65,7 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
 	new finalQuery[2048];
 
 	SQL_GetQueryString(query, finalQuery, charsmax(finalQuery));
-	log_to_file(g_logfile, "%s;", finalQuery);
+	com_putsd(g_logfile, "%s;", finalQuery);
 //	server_print("SQL_GetQueryString: %s", finalQuery);
 
 	if (failState == TQUERY_CONNECT_FAILED) {
@@ -76,7 +76,7 @@ public db_handle_errors(failState, Handle:query, error[], errCode, data[], dataS
 
 	if (errCode) {
 		server_print("Error on query: %s", error);
-		log_to_file(g_errorlog, "%s;", error);
+		com_putsd(g_errorlog, "%s;", error);
 	}
 }
 
@@ -158,7 +158,7 @@ Trie:db_get_record(Handle:query)
 			SQL_FieldNumToName(query, i, fieldName, charsmax(fieldName));
 			TrieSetString(result, stri, buffer);
 			TrieSetString(result, fieldName, buffer);
-			server_print("SQL_ReadResult: %s: %s", fieldName, buffer, data);
+			// server_print("SQL_ReadResult: %s: %s", fieldName, buffer, data);
 		}
 	}
 

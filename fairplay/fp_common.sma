@@ -95,6 +95,8 @@ public com_log_player(id)
 		get_localinfo("amxx_logs", logdir, charsmax(logdir));
 		format(logfile, charsmax(logfile), "%s/%s", logdir, com_userlist_playerlog);
 
+//		auth[6] = 48;
+
 		com_putsd(logfile, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
 
 
@@ -104,6 +106,8 @@ public com_log_player(id)
 		new serverid[16], sServerid[33];
 		get_cvar_string(com_serverid_cvar, serverid, charsmax(serverid));
 		db_quote_string(sServerid, charsmax(sServerid), serverid);
+
+//		auth[6] = 48;
 
 		db_silent_query("insert into sic_players (plr_connect, plr_map_map_id, plr_server_srv_id, plr_name, plr_auth, plr_ip, plr_cl_uid, plr_uid) values (now(), (select map_id from sic_maps where map_name = '%s'), (select srv_id from sic_servers where srv_serverid = '%s'), '%s', '%s', '%s', '%s', %d)",
 			map, sServerid, sName, auth, ip, sCluid, uid);

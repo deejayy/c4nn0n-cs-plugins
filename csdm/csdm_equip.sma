@@ -26,7 +26,7 @@
 #define AWP_LIMIT 2
 #define AUTO_LIMIT 1
 
-new c_teamnames_short[CsTeams][] = { "", "T", "CT", "SPEC" }
+new c_teamnames_short[CsTeams][] = { "", "TERRORIST", "CT", "SPEC" }
 
 //Tampering with the author and name lines can violate the copyright
 new PLUGINNAME[] = "CSDM Equip"
