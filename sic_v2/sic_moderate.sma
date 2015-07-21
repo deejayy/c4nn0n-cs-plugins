@@ -12,7 +12,7 @@
 
 #define spam_pattern       "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|aim|off|wh|bot|kurva|kruva|kocsog|anyad|geci|csira|csics|fasz|kutya|kutza|retk|cig.ny|szar|gyoker|rohad|buzi"
 #define spam_pattern_name  "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+|2[6-9][0-9][0-9][0-9]|\.com|\.net|\.hu|\.org|\.ro|\.sk|facebook|[a4]dm[i1]n|c[4a]nn[0o]n|sz*erver"
-#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck|Russian.Cheaters.com"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck|Russian.Cheaters.com|ADMINE FR?EE"
 #define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33]

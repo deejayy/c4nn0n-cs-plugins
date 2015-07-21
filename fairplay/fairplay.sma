@@ -1,7 +1,7 @@
 // Fair Play (was: Server Info Commands)
 
 #define PLUGIN_NAME		"Fair Play"
-#define PLUGIN_VERSION	"2.05" // rewritten from scratch at 1.42, Originally: Server Info Commands
+#define PLUGIN_VERSION	"2.06" // rewritten from scratch at 1.42, Originally: Server Info Commands
 #define PLUGIN_AUTHOR	"deejayy"
 
 #define BANNER			"-FPL- Fair Play loaded (SIC v3)"

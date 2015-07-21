@@ -319,4 +319,6 @@ public cmd_fp_punish(id, reason[], admin_id)
 	log_message_user2(admin_id, id, "punished", "(reason ^"%s^")", reason);
 	uf_write_userflag(id, {3,3,3,3}, {600,0,0,600}, reason[0] ? reason : "Punished (requested)", admin_id);
 	cmd_fp_ban(id, reason, admin_id);
+//		fch_colormessage(0, 4, "-! CHEATER BANNOLVA:^x01 <subject name here> (jutalom: ^x04vaktoltenyes orok ban^x01)");
+//		client_print(0, print_console, "CHEATER: <subject name here>, <steam_id>");
 }

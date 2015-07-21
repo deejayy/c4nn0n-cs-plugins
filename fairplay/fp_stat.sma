@@ -103,6 +103,8 @@ public Float:st_score(id)
 	new Float:s_k  = maxf(g_kill[id],     10.0);
 	new Float:s_d  = maxf(g_death[id],     3.0);
 	new Float:s_t  = maxf(time,           60.0);
+	new Float:s_h  = maxf(g_hit[id],       1.0);
+
 	new Float:s_hk = g_headkill[id];
 	new Float:s_hs = g_headhit[id];
 	new Float:s_wk = g_wallkill[id];
@@ -115,6 +117,7 @@ public Float:st_score(id)
 		+ s_wk / 3.0
 		- floatpower(17.0 / s_k, 2.0)
 		+ floatpower((500.0 + s_k) / 500.0, 2.0) * (s_hk / 200.0)
+		+ xs_sqrt(maxf(0.0, s_hs - s_k * 0.8) * (s_hs / maxf(1.0, s_h)) * 2) / 2
 //		+ floatpower(s_hs / s_k - 1.0, 2.0)
 		+ floatpower((s_hs - s_hk) / s_k, 2.0)
 		- maxf(0.0, 6.0 - s_t / 12.0)

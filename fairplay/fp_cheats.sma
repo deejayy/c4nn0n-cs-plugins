@@ -8,8 +8,12 @@ new g_knifespeed[33][2]
 new Float:g_viewangles[33][2]
 new Float:g_nospread[33]
 
+new g_nospread_treshold = 1500;
+
 public plugin_init_cheats()
 {
+	register_cvar("nsd", "0");
+
 	RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_knife", "cht_knifespeed", true);
 	set_task(1.0, "cht_task_knifespeed", 74202, "", 0, "b", 0);
 	set_task(1.0, "cht_task_scorecheck", 74203, "", 0, "b", 0);
@@ -35,11 +39,16 @@ public cht_cmdstart(id, uc_handle)
 			}
 		}
 
-		// server_print("%f, %d, %d, %d, %d, %d", g_nospread[id], p_button & IN_JUMP, p_button & IN_LEFT, p_button & IN_RIGHT, p_button & IN_JUMP + p_button & IN_LEFT + p_button & IN_RIGHT, (p_button & IN_JUMP) + (p_button & IN_LEFT) + (p_button & IN_RIGHT));
+		if (get_cvar_num("nsd")) {
+			// server_print("%f, %d, %d, %d, %d, %d", g_nospread[id], p_button & IN_JUMP, p_button & IN_LEFT, p_button & IN_RIGHT, p_button & IN_JUMP + p_button & IN_LEFT + p_button & IN_RIGHT, (p_button & IN_JUMP) + (p_button & IN_LEFT) + (p_button & IN_RIGHT));
+			log_message("%f, %f", p_viewangles[0], p_viewangles[1]);
+		}
 
-		if (g_nospread[id] > 500 && g_nospread[id] <= 501) {
+		if (g_nospread[id] > g_nospread_treshold && g_nospread[id] <= g_nospread_treshold + 1) {
 			log_message_user(id, "say ^"--- c4-nospread: %f^"", g_nospread[id]);
-			g_nospread[id] = 0;
+			g_nospread[id] = 0.0;
+			new uid = get_user_userid(id);
+			server_cmd("fp_punish #%d ^"Nem cheatelsz tobbet. (5)^"", uid);
 		}
 
 		g_viewangles[id][0] = p_viewangles[0];

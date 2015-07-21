@@ -143,7 +143,7 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 	new dbValues[fieldCount][65]; // escaping can double string's length
 	new sReason[256], i;
 
-	new pName[33], pClUid[8], sAdminName[64];
+	new pName[33], aName[33], pClUid[8], sAdminName[64];
 
 	get_user_authid(id, dbValues[1], 32);
 //	dbValues[1][6] = 48;
@@ -157,13 +157,19 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 	db_quote_string(dbValues[2], 64, pClUid);
 
 	if (admin_id) {
-		get_user_name(admin_id, pName, charsmax(pName));
-		db_quote_string(sAdminName, charsmax(sAdminName), pName);
+		get_user_name(admin_id, aName, charsmax(aName));
+		db_quote_string(sAdminName, charsmax(sAdminName), aName);
 	}
 
 	db_quote_string(sReason, charsmax(sReason), reason);
 
 	new fieldList[256], fieldValues[256]
+
+	if (flags[2] == 3) {
+		server_print("-! CHEATER BANNOLVA -> %s (jutalom: vaktoltenyes orok ban)", pName);
+		fch_colormessage(0, 4, "-! CHEATER BANNOLVA -> ^x01 %s (jutalom: ^x04vaktoltenyes orok ban^x01)", pName);
+		client_print(0, print_console, "CHEATER: %s, %s, %s", pName, dbValues[1], dbValues[3]);
+	}
 
 	if (!uf_bannable(dbValues[1])) {
 		flags[1] = 0;

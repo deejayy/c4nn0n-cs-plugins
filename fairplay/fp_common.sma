@@ -109,8 +109,8 @@ public com_log_player(id)
 
 //		auth[6] = 48;
 
-		db_silent_query("insert into sic_players (plr_connect, plr_map_map_id, plr_server_srv_id, plr_name, plr_auth, plr_ip, plr_cl_uid, plr_uid) values (now(), (select map_id from sic_maps where map_name = '%s'), (select srv_id from sic_servers where srv_serverid = '%s'), '%s', '%s', '%s', '%s', %d)",
-			map, sServerid, sName, auth, ip, sCluid, uid);
+		db_silent_query("insert into sic_players (plr_connect, plr_map_map_id, plr_server_srv_id, plr_name, plr_auth, plr_ip, plr_cl_uid, plr_uid, plr_steam) values (now(), (select map_id from sic_maps where map_name = '%s'), (select srv_id from sic_servers where srv_serverid = '%s'), '%s', '%s', '%s', '%s', %d, %d)",
+			map, sServerid, sName, auth, ip, sCluid, uid, com_has_steam(id));
 	}
 }
 
