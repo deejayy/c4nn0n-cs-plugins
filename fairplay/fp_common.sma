@@ -213,6 +213,10 @@ public com_write_position(id)
 	pev(id, pev_origin, origin);
 	server_print("%.4f, %.4f, %.4f", origin[0], origin[1], origin[2]);
 
+	new p_entid = find_ent_by_class(-1, "func_wall_toggle");
+	server_print("entid: %d", p_entid);
+	remove_entity(p_entid);
+
 	return PLUGIN_HANDLED;
 }
 
