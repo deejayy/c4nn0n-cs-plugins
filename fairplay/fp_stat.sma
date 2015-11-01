@@ -134,6 +134,14 @@ public Float:maxf(Float:a, Float:b)
 	return b;
 }
 
+public maxint(a, b)
+{
+	if (a > b) {
+		return a;
+	}
+	return b;
+}
+
 // TODO st_printstat()
 public st_printstat(id)
 {

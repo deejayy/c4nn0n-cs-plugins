@@ -12,6 +12,7 @@ new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
 
 public plugin_init_common()
 {
+	register_clcmd("say /rank",      "com_rank_command");
 	register_clcmd("say /admin",     "com_adminlist_command");
 	register_clcmd("say /admins",    "com_adminlist_command");
 	register_clcmd("say /adminlist", "com_adminlist_command");
@@ -25,6 +26,13 @@ public plugin_init_common()
 	com_generate_cl_uid(serverid, 8, "%s, %s", hostname, get_cvar_num("port"));
 
 	register_cvar(com_serverid_cvar, serverid, 1);
+}
+
+public com_rank_command(id)
+{
+	client_print(0, print_console, "Online statisztika (valos): http://c4nn0n.deejayy.hu/stat");
+	fch_colormessage(id, 3, "Online statisztika (valos): http://c4nn0n.deejayy.hu/stat (link a konzolban)");
+	return PLUGIN_CONTINUE;
 }
 
 public com_adminlist_command(id)
@@ -216,6 +224,13 @@ public com_write_position(id)
 	new p_entid = find_ent_by_class(-1, "func_wall_toggle");
 	server_print("entid: %d", p_entid);
 	remove_entity(p_entid);
+
+	new p_dest[34], p_time[32], p_passwd[16];
+	get_time("%Y-%m-%d", p_time, charsmax(p_time));
+	md5(p_time, p_dest);
+	copy(p_passwd, 6, p_dest[6]);
+	server_print("password: %s", p_passwd);
+	// server_cmd("sv_password %s", p_passwd);
 
 	return PLUGIN_HANDLED;
 }

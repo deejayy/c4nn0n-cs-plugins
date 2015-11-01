@@ -11,7 +11,7 @@
 #define const_ann_announce_increment  0.04
 #define const_ann_announce_fadeout    1.0
 
-new g_announce_reset_task          = 74201
+new g_announce_reset_task          = 75201
 new Float:g_announce_position      = const_ann_announce_position
 new Float:g_announce_increment     = const_ann_announce_increment
 new Float:g_announce_positions[33] = { const_ann_announce_position, ... }
