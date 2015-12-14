@@ -212,13 +212,18 @@ public cmd_fp_block_permanent_command(id, level, cid)
 public cmd_fp_ban_command(id, level, cid)
 {
 	if (cmd_access(id, level, cid, 1)) {
-		new target[33], reason[256];
+		new target[33], reason[256], mins[32];
 		read_argv(1, target, charsmax(target));
 		read_argv(2, reason, charsmax(reason));
+		read_argv(3, mins,   charsmax(mins  ));
+		new minutes = str_to_num(mins);
+		if (minutes < 1) {
+			minutes = 45;
+		}
 		remove_quotes(reason);
 		new player = cmd_target(id, target, CMDTARGET_ALLOW_SELF);
 		if (player) {
-			cmd_fp_ban(player, reason, id);
+			cmd_fp_ban(player, reason, id, minutes);
 		}
 	}
 }
@@ -301,10 +306,15 @@ public cmd_fp_block_permanent(id, reason[], admin_id)
 	uf_write_userflag(id, {2,2,2,2}, {45,0,0,45}, reason[0] ? reason : "Shootblocked (requested)", admin_id);
 }
 
-public cmd_fp_ban(id, reason[], admin_id)
+stock cmd_fp_ban(id, reason[], admin_id, timeout = 45)
 {
 	log_message_user2(admin_id, id, "banned", "(reason ^"%s^")", reason);
-	uf_write_userflag(id, {4,4,4,4}, {45,45,45,45}, reason[0] ? reason : BAN_REASON, admin_id);
+	new times[4];
+	times[0] = timeout;
+	times[1] = timeout;
+	times[2] = timeout;
+	times[3] = timeout;
+	uf_write_userflag(id, {4,4,4,4}, times, reason[0] ? reason : BAN_REASON, admin_id);
 	cmd_fp_kick(id, reason[0] ? reason : BAN_REASON, admin_id);
 }
 

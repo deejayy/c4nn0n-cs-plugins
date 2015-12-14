@@ -147,14 +147,15 @@ db_quote_string(output[], outputSize, source[])
  */
 Trie:db_get_record(Handle:query)
 {
-	new data, fieldName[32], buffer[256], i, stri[8], columns;
+	new fieldName[32], buffer[256], i, stri[8], columns;
 	new Trie:result = TrieCreate();
 
 	if (SQL_MoreResults(query)) {
 		columns = SQL_NumColumns(query)
 		for (i = 0; i < columns; i++) {
 			format(stri, charsmax(stri), "%d", i);
-			data = SQL_ReadResult(query, i, buffer, charsmax(buffer));
+			// new data = SQL_ReadResult(query, i, buffer, charsmax(buffer));
+			SQL_ReadResult(query, i, buffer, charsmax(buffer));
 			SQL_FieldNumToName(query, i, fieldName, charsmax(fieldName));
 			TrieSetString(result, stri, buffer);
 			TrieSetString(result, fieldName, buffer);
