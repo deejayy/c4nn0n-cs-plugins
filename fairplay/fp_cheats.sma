@@ -42,7 +42,7 @@ public cht_cmdstart(id, uc_handle)
 			}
 		}
 
-		if (get_cvar_num("nsd") && p_button & IN_ATTACK) {
+		if (p_button & IN_ATTACK) {
 			// server_print("%f, %d, %d, %d, %d, %d", g_nospread[id], p_button & IN_JUMP, p_button & IN_LEFT, p_button & IN_RIGHT, p_button & IN_JUMP + p_button & IN_LEFT + p_button & IN_RIGHT, (p_button & IN_JUMP) + (p_button & IN_LEFT) + (p_button & IN_RIGHT));
 			// log_message("%f, %f", p_viewangles[0], p_viewangles[1]);
 			new p_wep = get_user_weapon(id);

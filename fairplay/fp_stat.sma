@@ -20,6 +20,9 @@ public plugin_init_stat()
 	register_srvcmd("fp_stat",    "st_printstat");
 	register_srvcmd("fp_logsync", "st_logsync");
 	register_srvcmd("sic_ls",     "st_logsync");
+	register_srvcmd("sic_ms",     "st_mapsync");
+
+//	set_task(15.0, "st_logsync", 74209, "", 0, "c", 0);
 }
 
 public client_connect_stat(id)
@@ -156,15 +159,22 @@ public st_printstat(id)
 	}
 }
 
-public st_logsync()
+public st_mapsync()
 {
-	new players[32], num_players, id, time, cl_uid[8], ip[33], p_timeleft[9], p_hostname[65], Float:p_timelimit, map[33];
+	new p_timeleft[9], p_hostname[65], Float:p_timelimit, map[33];
 
 	get_cvar_string("amx_timeleft", p_timeleft, charsmax(p_timeleft));
 	get_cvar_string("hostname", p_hostname, charsmax(p_hostname));
 	get_mapname(map, charsmax(map));
 	p_timelimit = get_cvar_float("mp_timelimit");
 	log_message("Mapsync: (title ^"%s^") (ip ^"%s^") (map ^"%s^") (timeleft ^"%s^") (timelimit ^"%.2f^")", p_hostname, "", map, p_timeleft, p_timelimit);
+}
+
+public st_logsync()
+{
+	new players[32], num_players, id, time, cl_uid[8], ip[33];
+
+	st_mapsync();
 
 	get_players(players, num_players);
 	for (new i = 0; i < num_players; i++) {
