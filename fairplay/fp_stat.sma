@@ -124,6 +124,7 @@ public Float:st_score(id)
 //		+ floatpower(s_hs / s_k - 1.0, 2.0)
 		+ floatpower((s_hs - s_hk) / s_k, 2.0)
 		- maxf(0.0, 6.0 - s_t / 12.0)
+		- s_k / 300.0
 		- 1.0;
 
 	return score2;

@@ -4,9 +4,10 @@
 
 #define fp_moderate_included
 
-#define spam_pattern       "[0-9 ]+\.[0-9 ]+\.[0-9 ]+\.[0-9 ]+|2[6-9 ][0-9 ][0-9 ][0-9 ]|\.com|\.net|\.hu|\.org|\.ro|\.sk|\.tk|\.ua|aim|off|wh|bot|kurva|kruva|kocsog|anyad|geci|csira|csics|fasz|kuty|kutza|retk|cig.ny|szar|gyoker|rohad|buzi|pro.*kill|bas+z|bind.*w.*kill"
-#define spam_pattern_name  "[0-9 ]+\.[0-9 ]+\.[0-9 ]+\.[0-9 ]+|2[6-9 ][0-9 ][0-9 ][0-9 ]|\.com|\.net|\.hu|\.org|\.ro|\.sk|\.tk|\.ua|facebook|[a4]dm[i1]n|c[4a]n+[0o]n|sz*erver"
-#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck|Russian.Cheaters.com|www.Unreal-Gaming.com|Nik Hook v.*|zh4r0naX|370Hook v1.4|C\.C\.A HooK|Switch To Gaming|switchtogaming|173\.213\.|104\.131\.|GIVE ADMIN FEEE|CO\|NN\|ECT Server|ADMINE FR?EE|lphost|RESPAWN 2015|FRE+ ADMIN|\/chat|vk\.com|185\.58\.|by ZeaL|XO4ET ADMINKY"
+#define spam_pattern       "[0-9 ]+\.[0-9 ]+\.[0-9 ]+\.[0-9 ]+|2[6-9 ][0-9 ][0-9 ][0-9 ]|\.com|\.net|\.hu|\.org|\.ro|\.sk|\.tk|\.ua|aim|off|wh|bot|kurva|kruva|kocsog|anyad|geci|csira|csics|fas+z|kuty|kutza|retk|cig.ny|szar|gyoker|rohad|buzi|pro.*kill|bas+z|bind.*kill|magyar.*only.*d"
+#define spam_pattern_name  "[0-9 ]+\.[0-9 ]+\.[0-9 ]+\.[0-9 ]+|2[6-9 ][0-9 ][0-9 ][0-9 ]|\.com|\.net|\.hu|\.org|\.ro|\.sk|\.tk|\.ua|facebook|[a4]d[mn][i1][nm]|c[4a]+[nm]+[0o]+[mn]|sz*erver|d[e3].*j[a4]+y+"
+#define ban_pattern        "BaDBoY.*Private.*Frags.*Deaths.*HS|CREATED BY M.F1A AND DARKTEAM|BaDBoY.*united-cheaters|Alien h4x|Unreal-Rage Public v|W4R Hook v. By|test hook v[0-9]|C\.C\.A Priv.*Hook|BulkaH4ck|Russian.Cheaters.com|Unreal-Gaming.com|Nik Hook v.*|zh4r0naX|370Hook v1.4|C\.C\.A HooK|Switch To Gaming|switchtogaming|173\.213\.|104\.131\.|GIVE ADMIN FEEE|CO\|NN\|ECT Server|ADMINE FR?EE|lphost|RESPAWN 2015|FRE+ ADMIN|\/chat|vk\.com|185\.58\.|by ZeaL|XO4ET ADMINKY|FRE+ VIP|A D M I N"
+#define ban_pattern2       "AMMO FOR NEW PLAYERS|SIBIU.RANGFORT.RO|Pirate-Hack\.tk|Unreal-Rage-Public|Adnan TOTAL OWNAGE|RAGE.*REVENGE.*aimbot|First 3 players|Pirokao-Hook|FLVBYRF|VALVE-MS RU"
 #define server_banner_name "193.224.130.190:27015"
 
 new g_muted[33];
@@ -36,9 +37,12 @@ public client_connect_moderate(id)
 
 public mod_say_command(id)
 {
-	new p_param[256];
+	new p_param[256], p_name[33], ip[33];
 	read_args(p_param, charsmax(p_param));
 	remove_quotes(p_param);
+
+	get_user_ip(id, ip, charsmax(ip), 1);
+	get_user_info(id, "name", p_name, charsmax(p_name));
 
 	if (mod_regex_match(p_param, ban_pattern, 0)) {
 		log_message_user(id, "say ^"BAN_PATTERN: %s^"", p_param);
@@ -47,9 +51,24 @@ public mod_say_command(id)
 		server_cmd("fp_punish #%d ^"Nem cheatelsz tobbet. (1)^"", uid);
 		return PLUGIN_HANDLED;
 	}
+
+	if (mod_regex_match(p_param, ban_pattern2, 0)) {
+		log_message_user(id, "say ^"BAN_PATTERN: %s^"", p_param);
+		mod_set_muted(id, 1);
+		new uid = get_user_userid(id);
+		server_cmd("fp_punish #%d ^"Nem cheatelsz tobbet. (1)^"", uid);
+		return PLUGIN_HANDLED;
+	}
+
 	if (mod_get_muted(id) || mod_regex_match(p_param, spam_pattern, 1)) {
 		log_message_user(id, "say ^"MUTED: %s^"", p_param);
 		fch_echo(id, p_param);
+		return PLUGIN_HANDLED;
+	}
+
+	if (mod_regex_match(p_name, "\[VALVE - MS RU\]", 0)) {
+		log_message("F'kin Steamboost asshole: %s, %s", ip, p_name);
+		server_cmd("addip %d %s", 60, ip);
 		return PLUGIN_HANDLED;
 	}
 
@@ -82,10 +101,12 @@ public mod_userinfochanged(id)
 	if (!(equal(p_oldname, p_newname) || uf_get_name_immunity(id))) {
 //	if (!(equal(p_oldname, p_newname))) {
 		if (strlen(p_oldname) == 0) {
-			p_oldname = server_banner_name;
+			format(p_oldname, charsmax(p_oldname), "%s /%d", server_banner_name, random_num(1000,9999));
+			//p_oldname = server_banner_name;
 		}
 
 		if (mod_regex_match(p_newname, spam_pattern_name, 1)) {
+			server_print("Spammer name: %s", p_newname);
 			set_user_info(id, "name", p_oldname);
 			mod_set_muted(id, 1);
 			return FMRES_HANDLED;

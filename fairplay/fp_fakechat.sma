@@ -17,6 +17,8 @@ public plugin_init_fakechat()
 	register_srvcmd("pmsg", "fch_privmsg")
 	register_srvcmd("gmsg", "fch_globalmsg")
 	register_srvcmd("vs",   "fch_globalmsg")
+	register_srvcmd("ircmsg", "fch_ircmsg")
+	register_srvcmd("ircstatus", "fch_ircstatus")
 }
 
 public fch_colormessage(id, color, text[], any:...)
@@ -87,5 +89,24 @@ public fch_globalmsg(id)
 	read_argv(2, text, charsmax(text))
 	if (!equali(sender, "") && !equali(text, "")) {
 		fch_directmessage(0, "^x01*ADMIN* ^x03%s^x01 :  %s", sender, text)
+	}
+}
+
+public fch_ircmsg(id)
+{
+	new sender[33], text[255]
+	read_argv(1, sender, charsmax(sender))
+	read_argv(2, text, charsmax(text))
+	if (!equali(sender, "") && !equali(text, "")) {
+		fch_directmessage(0, "^x01*IRC* ^x03%s^x01 :  %s", sender, text)
+	}
+}
+
+public fch_ircstatus(id)
+{
+	new status[33]
+	read_argv(1, status, charsmax(status))
+	if (!equali(status, "")) {
+		fch_directmessage(0, "^x01*IRC* ^x03%s^x01", status)
 	}
 }

@@ -50,8 +50,11 @@ uf_get_immunity(id)
 	new pAuth[33], pName[33];
 	get_user_authid(id, pAuth, charsmax(pAuth));
 	get_user_info  (id, "name", pName, charsmax(pName));
-
-	if (equali(pAuth, "STEAM_0:1:2930298") || equali(pAuth, "STEAM_0:1:1814110") || equali(pName, "fb.com/c4nn0n.hu")) {
+	// "STEAM_0:1:424892084"
+	if (equali(pAuth, "STEAM_0:1:2930298") ||
+		equali(pAuth, "STEAM_0:1:1814110") ||
+		equali(pAuth, "STEAM_0:1:424892084") ||
+		equali(pName, "fb.com/c4nn0n.hu")) {
 		return 1;
 	}
 
@@ -64,7 +67,10 @@ uf_get_name_immunity(id)
 	get_user_authid(id, pAuth, charsmax(pAuth));
 	get_user_info  (id, "name", pName, charsmax(pName));
 
-	if (equali(pAuth, "STEAM_0:1:2930298") || equali(pAuth, "STEAM_0:1:1814110") || equali(pName, "fb.com/c4nn0n.hu")) {
+	if (equali(pAuth, "STEAM_0:1:2930298") ||
+		equali(pAuth, "STEAM_0:1:1814110") ||
+		equali(pAuth, "STEAM_0:1:424892084") ||
+		equali(pName, "fb.com/c4nn0n.hu")) {
 		return 1;
 	}
 
@@ -165,6 +171,10 @@ uf_write_userflag(id, flags[], minutes[], reason[], admin_id)
 
 	new fieldList[256], fieldValues[256]
 
+	if (equal(dbValues[0], "193.224.130.190:27015")) {
+		flags[0] = 0;
+	}
+
 	if (flags[2] == 3) {
 		server_print("-! CHEATER BANNOLVA -> %s (jutalom: vaktoltenyes orok ban)", pName);
 		fch_colormessage(0, 4, "-! CHEATER BANNOLVA -> ^x01 %s (jutalom: ^x04vaktoltenyes orok ban^x01)", pName);
@@ -194,6 +204,7 @@ uf_bannable(authid[])
 	if (equal(authid, "BOT") ||
 		equal(authid, "") ||
 		equal(authid, "4294967295") ||
+		equal(authid, "HLTV") ||
 		equal(authid, "STEAM_ID_LAN") ||
 		equal(authid, "VALVE_ID_LAN") ||
 		equal(authid, "STEAM_ID_PENDING") ||

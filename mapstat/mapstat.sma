@@ -9,9 +9,9 @@
 
 public plugin_init()
 {
-	register_plugin("Mapstat", "0.56", "deejayy.hu");
+	register_plugin("Mapstat", "0.57", "deejayy.hu");
 
-	set_task(10.0, "mps_checkmap",   74207, "", 0, "b", 0);
+	set_task(20.0, "mps_checkmap",   74207, "", 0, "b", 0);
 	set_task( 5.0, "mps_settimeout", 74208, "", 0, "c", 0);
 }
 
@@ -33,7 +33,7 @@ public mps_checkmap()
 
 	p_timelimit = get_cvar_float("mp_timelimit");
 
-	if (p_timelimit > 5.0) {
+	if (p_timelimit > 5.0 && p_timelimit < 120.0) {
 		p_timelimit = maxf(1.0, p_timelimit + ((num_players - 18.0) / 32.0));
 		log_message("-MPS- map: %s, num_players: %d, p_timelimit: %.2f", map, num_players, p_timelimit);
 		set_cvar_float("mp_timelimit", p_timelimit);

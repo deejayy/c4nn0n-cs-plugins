@@ -130,7 +130,7 @@ public cht_task_scorecheck()
 	for (new i = 0; i < num_players; i++) {
 		id = players[i];
 		uid = get_user_userid(id);
-		score = st_score(id) - uf_get_immunity(id) * 1.8 - com_has_steam(id) * 1.2;
+		score = st_score(id) - uf_get_immunity(id) * 3.0 - com_has_steam(id) * 1.2;
 		if (score > 13.9) {
 			log_message_user(id, "cheats (type ^"multiple^") (score ^"%.2f^")", score);
 			server_cmd("fp_punish #%d ^"Nem cheatelsz tobbet. (3)^"", uid);

@@ -9,6 +9,7 @@
 #define stripkeys_l 40
 new c_stripkeys[stripkeys_l][] = {"_ah", "ah", "autobind", "bn_patch", "bottomcolor", "cheater", "cl_dlmax", "cl_lb", "dm", "dzuid", "friends", "gad", "ghosts", "_gm", "_gmprof", "lac_id", "_lang", "lang", "lefthand", "mID", "model", "mp_cnet", "mp_net", "nameacc", "_ndmf", "_ndmh", "_ndms", "nick_pass", "quality", "rhlg", "_rpgm_cfg", "scanner", "source_models", "src", "status_monitor", "timepass", "topcolor", "translit", "vgui_menu", "xredir"}
 new c_teamnames[CsTeams][] = { "", "T", "CT", "SPEC" }
+new g_cl_uid[33][8];
 
 public plugin_init_common()
 {
@@ -64,6 +65,23 @@ public com_generate_cl_uid(cl_uid[], len, source[], any:...)
 	copy(cl_uid, len, p_dest)
 }
 
+public com_check_setinfo(topcolor[], task_id)
+{
+	new p_topcolor[32], p_cl_uid[8];
+	get_user_info(task_id - 74400, "topcolor", p_topcolor, charsmax(p_topcolor));
+	get_user_info(task_id - 74400, "cl_uid", p_cl_uid, charsmax(p_cl_uid));
+	client_cmd(task_id - 74400, "setinfo topcolor ^"%s^"", topcolor);
+
+	if (equali(topcolor, p_topcolor) && equali(p_cl_uid, "")) {
+		new uid = get_user_userid(task_id - 74400);
+		server_print("-- Can't set topcolor for #%d, blocking", uid);
+		// not reliable yet
+		// server_cmd("fp_block #%d", uid);
+	}
+
+	server_print("topcolor: %s, task id: %d, fresh read: %s", topcolor, task_id, p_topcolor);
+}
+
 public com_set_cl_uid(id)
 {
 	new cl_uid[8], ip[32];
@@ -71,8 +89,20 @@ public com_set_cl_uid(id)
 	get_user_ip(id, ip, charsmax(ip), 1);
 
 	if (!is_user_bot(id)) {
+		/**
+		 * save the topcolor variable for a little testing
+		 * change it to "1" + topcolor
+		 * set a task to read it later (3.0 sec default) and restore to originally read value
+		 * if it is changed, we can access setinfo, else some shield is active
+		**/
+		new topcolor[32];
+		get_user_info(id, "topcolor", topcolor, charsmax(topcolor));
+		client_cmd(id, "setinfo topcolor ^"1%s^"", topcolor);
+		set_task(3.0, "com_check_setinfo", 74400 + id, topcolor, sizeof(topcolor), "a", 1);
+
 		if (equal(cl_uid, "") || equal(cl_uid, "76c6fd") || equal(cl_uid, "2ec9c1")) {
 			com_generate_cl_uid(cl_uid, 6, "%s.%d.%s", ip, random_num(10000,99999), id);
+			g_cl_uid[id] = cl_uid;
 			client_cmd(id, "setinfo cl_uid ^"%s^"", cl_uid);
 
 			new checkinfo[32];
@@ -100,13 +130,16 @@ public com_log_player(id)
 		get_mapname(map, charsmax(map));
 		uid = get_user_userid(id);
 
+		if (equali(cl_uid, "")) {
+			cl_uid = g_cl_uid[id];
+		}
+
 		get_localinfo("amxx_logs", logdir, charsmax(logdir));
 		format(logfile, charsmax(logfile), "%s/%s", logdir, com_userlist_playerlog);
 
 //		auth[6] = 48;
 
 		com_putsd(logfile, "%20s^t%32s^t%20s^t%24s^t%6s", map, name, auth, ip, cl_uid);
-
 
 		db_quote_string(sName, charsmax(sName), name);
 		db_quote_string(sCluid, charsmax(sCluid), cl_uid);
@@ -201,6 +234,7 @@ public log_message_user2(id, id2, event[], text[], any:...)
 
 public client_disconnect_common(id)
 {
+	g_cl_uid[id] = "";
 	st_printstat(id);
 }
 

@@ -147,7 +147,7 @@ public sic_moderate_fm_cinfoc(id)
 	get_user_info(id, "name", p_newname, charsmax(p_newname))
 
 	get_user_authid(id, p_auth, charsmax(p_auth))
-	new p_flags = sic_userlist_get_flags(GF_AUTH, p_auth);
+	new p_flags = sic_userlist_get_flags(GF_AUTH, p_auth)
 
 	if (!equal(p_oldname, p_newname) && !(p_flags & PF_IMMUNITY)) {
 		if (strlen(p_oldname) == 0) {

@@ -1,7 +1,7 @@
-// Fair Play (was: Server Info Commands)
+// Fair Play - fp (was: Server Info Commands - sic)
 
 #define PLUGIN_NAME		"Fair Play"
-#define PLUGIN_VERSION	"2.12" // rewritten from scratch at 1.42, Originally: Server Info Commands
+#define PLUGIN_VERSION	"2.14a" // rewritten from scratch at 1.42, Originally: Server Info Commands (sic)
 #define PLUGIN_AUTHOR	"deejayy.hu"
 
 #define BANNER			"-FPL- Fair Play loaded (SIC v3)"
@@ -34,7 +34,6 @@
 #include "fp_announce.sma"
 #include "fp_menu.sma"
 #include "fp_nsrank.sma"
-// #include "fp_mapstat.sma"
 
 public plugin_init()
 {
@@ -55,7 +54,6 @@ public plugin_init()
 	plugin_init_announce(5);
 	plugin_init_stat();
 	plugin_init_menu();
-// 	plugin_init_mapstat();
 }
 
 public plugin_cfg()
